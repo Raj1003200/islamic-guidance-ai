@@ -1,0 +1,9 @@
+# QA Test Suite Dependencies
+# Context Understanding Logic Validation
+
+# HTTP requests library for API testing
+requests>=2.31.0
+
+# Optional: For enhanced testing capabilities
+# pytest>=7.4.0  # Uncomment if you want to integrate with pytest framework
+# pytest-html>=3.2.0  # Uncomment for HTML test reports
