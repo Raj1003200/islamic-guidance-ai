@@ -18,7 +18,7 @@ import google.generativeai as genai
 from typing import Optional, List
 
 # Import async services
-from services import (
+from backend.services import (
     search_quran_async,
     search_hadith_async
 )
