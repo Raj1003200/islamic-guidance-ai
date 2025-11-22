@@ -57,30 +57,55 @@ function simulateLoadingStages(callback) {
   }, 1200); // change stage every 1.2s
 }
 
-async function fetchGuidance(query) {
-  console.log('Fetching guidance for query:', query);
+// Logging utility
+async function logToServer(level, message) {
+  const timestamp = new Date().toISOString();
+  console.log(`[${level.toUpperCase()}] ${message}`); // Keep console log for debugging
   try {
-    // Placeholder endpoint – replace with real backend URL
-    console.log('Sending POST request to /api/guidance');
+    await fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level, message, timestamp })
+    });
+  } catch (e) {
+    console.error('Failed to send log to server:', e);
+  }
+}
+
+async function fetchGuidance(query) {
+  logToServer('info', `Fetching guidance for query: ${query}`);
+  try {
+    logToServer('info', 'Sending POST request to /api/guidance');
     const response = await fetch('/api/guidance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query })
     });
-    console.log('Response received. Status:', response.status);
+    logToServer('info', `Response received. Status: ${response.status}`);
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server error:', response.status, errorText);
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+      logToServer('error', `Server error: ${response.status} - ${JSON.stringify(errorData)}`);
+      
+      // Return structured error for different status codes
+      if (response.status === 400) {
+        return { error: 'Invalid query', message: errorData.detail || 'Query too short' };
+      } else if (response.status === 429) {
+        return { error: 'Rate limit', message: 'API quota exceeded. Please try again later.' };
+      } else if (response.status === 503) {
+        return { error: 'Service unavailable', message: 'AI model not available. Please check API key in Settings.' };
+      } else if (response.status === 500) {
+        return { error: 'Server error', message: errorData.detail || 'Internal server error occurred' };
+      }
       throw new Error(`Server error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Data parsed:', data);
+    logToServer('info', 'Data parsed successfully');
     return data;
   } catch (err) {
-    console.error('Network error:', err);
-    return { error: 'Network error' };
+    logToServer('error', `Network error: ${err}`);
+    return { error: 'Network error', message: 'Failed to connect to server. Please check if the server is running.' };
   }
 }
 
@@ -89,6 +114,16 @@ function displayResult(data) {
   clearStatus();
   // Show result section
   resultSection.classList.remove('hidden');
+  
+  // Check if it's an error
+  if (data.error) {
+    answerDiv.innerHTML = `<div class="error-message">
+      <strong>Error:</strong> ${data.message || data.error}
+    </div>`;
+    citationsDiv.innerHTML = '';
+    return;
+  }
+  
   // Populate answer
   answerDiv.textContent = data.answer || '';
   // Populate citations if any
@@ -144,3 +179,15 @@ queryInput.addEventListener('keydown', (e) => {
     searchBtn.click();
   }
 });
+
+// Dark Mode Toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+if (darkModeToggle) {
+  darkModeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+}
+

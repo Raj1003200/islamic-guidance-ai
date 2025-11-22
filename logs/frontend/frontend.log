@@ -1,0 +1,8 @@
+2025-11-22T05:14:47.122Z - FRONTEND - INFO - Sending POST request to /api/guidance
+2025-11-22T05:14:47.117Z - FRONTEND - INFO - Fetching guidance for query: I am feeling anxious about my future
+2025-11-22T05:14:48.234Z - FRONTEND - INFO - Response received. Status: 500
+2025-11-22T05:14:48.240Z - FRONTEND - ERROR - Server error: 500 - {"detail":"Error generating guidance: 400 API key not valid. Please pass a valid API key. [reason: \"API_KEY_INVALID\"\ndomain: \"googleapis.c"}
+2025-11-22T05:16:38.115Z - FRONTEND - INFO - Fetching guidance for query: I am feeling anxious about my future
+2025-11-22T05:16:38.140Z - FRONTEND - INFO - Sending POST request to /api/guidance
+2025-11-22T05:16:41.466Z - FRONTEND - INFO - Response received. Status: 200
+2025-11-22T05:16:41.473Z - FRONTEND - INFO - Data parsed successfully

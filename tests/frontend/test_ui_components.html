@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frontend Component Tests</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .test { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+    .pass { background-color: #d4edda; }
+    .fail { background-color: #f8d7da; }
+    h1 { color: #333; }
+    h2 { color: #666; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>Islamic Guidance AI - Frontend Component Tests</h1>
+  
+  <h2>Test Results</h2>
+  <div id="results"></div>
+  
+  <script>
+    const results = document.getElementById('results');
+    const tests = [];
+    
+    function addTest(name, passed, message) {
+      tests.push({ name, passed, message });
+      const div = document.createElement('div');
+      div.className = 'test ' + (passed ? 'pass' : 'fail');
+      div.innerHTML = `
+        <strong>${passed ? '✓' : '✗'} ${name}</strong>
+        <p>${message}</p>
+      `;
+      results.appendChild(div);
+    }
+    
+    // Test 1: LocalStorage availability
+    try {
+      localStorage.setItem('test', 'test');
+      localStorage.removeItem('test');
+      addTest('localStorage Available', true, 'localStorage is working');
+    } catch (e) {
+      addTest('localStorage Available', false, e.message);
+    }
+    
+    // Test 2: Theme persistence
+    try {
+      const originalTheme = localStorage.getItem('theme');
+      localStorage.setItem('theme', 'dark');
+      const savedTheme = localStorage.getItem('theme');
+      if (originalTheme) localStorage.setItem('theme', originalTheme);
+      addTest('Theme Persistence', savedTheme === 'dark', `Theme saved as: ${savedTheme}`);
+    } catch (e) {
+      addTest('Theme Persistence', false, e.message);
+    }
+    
+    // Test 3: Input validation (minimum 10 chars)
+    function isValidInput(text) {
+      return text && text.trim().length >= 10;
+    }
+    addTest('Input Validation - Valid', isValidInput('I am feeling anxious'), 'Long input accepted');
+    addTest('Input Validation - Invalid', !isValidInput('hello'), 'Short input rejected');
+    
+    // Test 4: Fetch API availability
+    try {
+      const hasFetch = typeof fetch !== 'undefined';
+      addTest('Fetch API', hasFetch, 'Fetch API is available for backend calls');
+    } catch (e) {
+      addTest('Fetch API', false, e.message);
+    }
+    
+    // Test 5: DOM manipulation
+    try {
+      const testDiv = document.createElement('div');
+      testDiv.textContent = 'Test';
+      document.body.appendChild(testDiv);
+      document.body.removeChild(testDiv);
+      addTest('DOM Manipulation', true, 'Can create and remove elements');
+    } catch (e) {
+      addTest('DOM Manipulation', false, e.message);
+    }
+    
+    // Test 6: Event listener registration
+    try {
+      const btn = document.createElement('button');
+      let clicked = false;
+      btn.addEventListener('click', () => { clicked = true; });
+      btn.click();
+      addTest('Event Listeners', clicked, 'Event listeners work correctly');
+    } catch (e) {
+      addTest('Event Listeners', false, e.message);
+    }
+    
+    // Test 7: JSON parsing
+    try {
+      const obj = { test: 'value' };
+      const json = JSON.stringify(obj);
+      const parsed = JSON.parse(json);
+      addTest('JSON Operations', parsed.test === 'value', 'JSON stringify/parse working');
+    } catch (e) {
+      addTest('JSON Operations', false, e.message);
+    }
+    
+    // Summary
+    const passed = tests.filter(t => t.passed).length;
+    const total = tests.length;
+    const summary = document.createElement('div');
+    summary.innerHTML = `<h2>Summary: ${passed}/${total} tests passed</h2>`;
+    summary.style.marginTop = '30px';
+    summary.style.padding = '20px';
+    summary.style.backgroundColor = passed === total ? '#d4edda' : '#fff3cd';
+    results.appendChild(summary);
+  </script>
+</body>
+</html>
