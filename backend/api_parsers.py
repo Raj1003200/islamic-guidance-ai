@@ -6,6 +6,9 @@ Parses JSON responses from Quran and Hadith APIs
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass
 from datetime import datetime
+import logging
+
+logger = logging.getLogger("IslamicGuideAI")
 
 
 @dataclass
@@ -112,7 +115,7 @@ class QuranAPIParser:
                 result["verses"].append(verse)
             except Exception as e:
                 # Log error but continue parsing other verses
-                print(f"Error parsing verse: {e}")
+                logger.error(f"Error parsing verse: {e}")
                 continue
         
         result["success"] = True
@@ -227,7 +230,7 @@ class HadithAPIParser:
                     hadith = HadithAPIParser._parse_hadith(hadith_data, result["collection_name"])
                     result["hadiths"].append(hadith)
                 except Exception as e:
-                    print(f"Error parsing hadith: {e}")
+                    logger.error(f"Error parsing hadith: {e}")
                     continue
             
             result["success"] = True

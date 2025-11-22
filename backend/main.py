@@ -3,7 +3,6 @@ import json
 import traceback
 import uvicorn
 import logging
-from logging.handlers import RotatingFileHandler
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,30 +17,14 @@ from backend.services import search_quran, search_hadith
 load_dotenv()
 
 # --- Logging Configuration ---
-# Check if running in serverless environment (Vercel)
+# Console-only logging for all environments
 IS_SERVERLESS = os.getenv("VERCEL") == "1"
 
-if IS_SERVERLESS:
-    # In serverless, only use StreamHandler (console logs)
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[logging.StreamHandler()]
-    )
-else:
-    # In local development, use both file and console logging
-    log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "backend")
-    os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, "app.log")
-    
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5),
-            logging.StreamHandler()
-        ]
-    )
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()]
+)
 
 logger = logging.getLogger("IslamicGuideAI")
 logger.info("Loading IslamicGuideAI Backend Module...")
@@ -109,29 +92,13 @@ class LogRequest(BaseModel):
 async def log_frontend(request: LogRequest):
     """
     Endpoint to receive logs from the frontend.
+    Logs to console only (no file writing).
     """
-    # In serverless environment, just log to console
-    if IS_SERVERLESS:
-        logger.log(
-            getattr(logging, request.level.upper(), logging.INFO),
-            f"[FRONTEND] {request.message}"
-        )
-        return {"status": "logged"}
-    
-    # In local environment, write to file
-    frontend_log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "frontend")
-    os.makedirs(frontend_log_dir, exist_ok=True)
-    frontend_log_file = os.path.join(frontend_log_dir, "frontend.log")
-    
-    log_entry = f"{request.timestamp} - FRONTEND - {request.level.upper()} - {request.message}\n"
-    
-    try:
-        with open(frontend_log_file, "a", encoding="utf-8") as f:
-            f.write(log_entry)
-        return {"status": "logged"}
-    except Exception as e:
-        logger.error(f"Failed to write frontend log: {e}")
-        raise HTTPException(status_code=500, detail="Failed to write log")
+    logger.log(
+        getattr(logging, request.level.upper(), logging.INFO),
+        f"[FRONTEND] {request.message}"
+    )
+    return {"status": "logged"}
 
 @app.post("/api/guidance")
 async def get_guidance(request: GuidanceRequest):
