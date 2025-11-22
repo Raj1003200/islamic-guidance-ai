@@ -1,8 +1,8 @@
 import os
+import sys
 import json
 import traceback
 import uvicorn
-import logging
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,18 +16,11 @@ from backend.services import search_quran, search_hadith
 # Load environment variables
 load_dotenv()
 
-# --- Logging Configuration ---
-# Console-only logging for all environments
+# --- Configuration ---
+# Check if running in serverless environment (Vercel)
 IS_SERVERLESS = os.getenv("VERCEL") == "1"
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()]
-)
-
-logger = logging.getLogger("IslamicGuideAI")
-logger.info("Loading IslamicGuideAI Backend Module...")
+print("Loading IslamicGuideAI Backend Module...", file=sys.stdout, flush=True)
 
 # Helper function to truncate long JSON for logging
 def truncate_json_for_log(data, max_text_length=200):
@@ -52,14 +45,14 @@ model = None
 
 try:
     if not API_KEY:
-        logger.warning("GEMINI_API_KEY not found in .env")
+        print("GEMINI_API_KEY not found in .env", file=sys.stdout, flush=True)
     else:
         genai.configure(api_key=API_KEY)
         # Use gemini-2.0-flash as verified
         model = genai.GenerativeModel('gemini-2.0-flash')
-        logger.info("Successfully configured Gemini 2.0 Flash model")
+        print("Successfully configured Gemini 2.0 Flash model", file=sys.stdout, flush=True)
 except Exception as e:
-    logger.error(f"Error configuring model: {e}")
+    print(f"Error configuring model: {e}", file=sys.stdout, flush=True)
     # Don't crash, just leave model as None
 
 app = FastAPI()
@@ -94,26 +87,23 @@ async def log_frontend(request: LogRequest):
     Endpoint to receive logs from the frontend.
     Logs to console only (no file writing).
     """
-    logger.log(
-        getattr(logging, request.level.upper(), logging.INFO),
-        f"[FRONTEND] {request.message}"
-    )
+    print(f"[FRONTEND - {request.level.upper()}] {request.message}", file=sys.stdout, flush=True)
     return {"status": "logged"}
 
 @app.post("/api/guidance")
 async def get_guidance(request: GuidanceRequest):
-    logger.info("="*80)
-    logger.info(f"[USER REQUEST] Received guidance request")
-    logger.info(f"Query: {request.query}")
-    logger.info(f"Source: {request.source}")
-    logger.info("="*80)
+    print("="*80, file=sys.stdout, flush=True)
+    print(f"[USER REQUEST] Received guidance request", file=sys.stdout, flush=True)
+    print(f"Query: {request.query}", file=sys.stdout, flush=True)
+    print(f"Source: {request.source}", file=sys.stdout, flush=True)
+    print("="*80, file=sys.stdout, flush=True)
     
     if not request.query or len(request.query) < 10:
-        logger.warning("Query validation failed: Query too short")
+        print("Query validation failed: Query too short", file=sys.stdout, flush=True)
         raise HTTPException(status_code=400, detail="Query too short")
     
     if not model:
-        logger.error("AI model not available")
+        print("AI model not available", file=sys.stdout, flush=True)
         raise HTTPException(status_code=503, detail="AI model not available. Please check API key configuration.")
 
     try:
@@ -125,7 +115,7 @@ async def get_guidance(request: GuidanceRequest):
         
         # 2. Perform Search if Source is External or Both
         if request.source in ["external", "both"]:
-            logger.info("[KEYWORD EXTRACTION] Extracting keywords for search...")
+            print("[KEYWORD EXTRACTION] Extracting keywords for search...", file=sys.stdout, flush=True)
             # Ask Gemini to extract keywords - improved to handle multi-word queries
             keyword_prompt = f"""
             Extract ALL relevant keywords from this query for searching Islamic texts (Quran/Hadith). 
@@ -138,17 +128,17 @@ async def get_guidance(request: GuidanceRequest):
             
             Query: "{request.query}"
             """
-            logger.info(f"[GEMINI REQUEST] Sending keyword extraction request")
-            logger.info(f"[GEMINI REQUEST] Prompt: {keyword_prompt}")
+            print(f"[GEMINI REQUEST] Sending keyword extraction request", file=sys.stdout, flush=True)
+            print(f"[GEMINI REQUEST] Prompt: {keyword_prompt}", file=sys.stdout, flush=True)
             kw_response = model.generate_content(keyword_prompt)
             keywords = kw_response.text.strip()
-            logger.info(f"[GEMINI RESPONSE] Extracted keywords: '{keywords}'")
+            print(f"[GEMINI RESPONSE] Extracted keywords: '{keywords}'", file=sys.stdout, flush=True)
             
             
             # Search Quran
-            logger.info(f"[QURAN SEARCH] Searching Quran with keywords: '{keywords}'")
+            print(f"[QURAN SEARCH] Searching Quran with keywords: '{keywords}'", file=sys.stdout, flush=True)
             quran_results = search_quran(keywords)
-            logger.info(f"[QURAN SEARCH] Found {len(quran_results)} Quran verses")
+            print(f"[QURAN SEARCH] Found {len(quran_results, file=sys.stdout, flush=True)} Quran verses")
             
             # Search Hadith - use all keywords for better search coverage
             # Convert comma-separated keywords to list and search for each
@@ -161,14 +151,14 @@ async def get_guidance(request: GuidanceRequest):
                 "eng-tirmidhi", "eng-nasai", "eng-ibnmajah"
             ]
             
-            logger.info(f"[HADITH SEARCH] Using collections: {selected_collections}")
-            logger.info(f"[HADITH SEARCH] Searching with {len(keyword_list)} keywords: {keyword_list}")
+            print(f"[HADITH SEARCH] Using collections: {selected_collections}", file=sys.stdout, flush=True)
+            print(f"[HADITH SEARCH] Searching with {len(keyword_list, file=sys.stdout, flush=True)} keywords: {keyword_list}")
             for keyword in keyword_list:
-                logger.info(f"[HADITH SEARCH] Searching Hadith with keyword: '{keyword}'")
+                print(f"[HADITH SEARCH] Searching Hadith with keyword: '{keyword}'", file=sys.stdout, flush=True)
                 hadith_results = search_hadith(keyword, collections=selected_collections)
                 if hadith_results:
                     all_hadith_results.extend(hadith_results)
-                    logger.info(f"[HADITH SEARCH] Found {len(hadith_results)} Hadiths for keyword '{keyword}'")
+                    print(f"[HADITH SEARCH] Found {len(hadith_results, file=sys.stdout, flush=True)} Hadiths for keyword '{keyword}'")
             
             # Remove duplicates based on hadithnumber and book
             seen = set()
@@ -179,7 +169,7 @@ async def get_guidance(request: GuidanceRequest):
                     seen.add(key)
                     unique_hadiths.append(h)
             
-            logger.info(f"[HADITH SEARCH] Total unique Hadiths found: {len(unique_hadiths)}")
+            print(f"[HADITH SEARCH] Total unique Hadiths found: {len(unique_hadiths, file=sys.stdout, flush=True)}")
             
             # Build Context
             if quran_results:
@@ -188,10 +178,10 @@ async def get_guidance(request: GuidanceRequest):
                     context_text += f"- {q['text']} (Surah {q['surah']} {q['number']})\n"
                     citations.append({"title": f"Quran {q['surah']} {q['number']}", "url": f"https://quran.com/{q['number']}"})
                     # Log each verse details
-                    logger.info(f"  [VERSE {idx}] Surah: {q['surah']}, Number: {q['number']}, Verse in Surah: {q['numberInSurah']}")
-                    logger.info(f"  [VERSE {idx}] Text: {q['text'][:200]}{'...' if len(q['text']) > 200 else ''}")
+                    print(f"  [VERSE {idx}] Surah: {q['surah']}, Number: {q['number']}, Verse in Surah: {q['numberInSurah']}", file=sys.stdout, flush=True)
+                    print(f"  [VERSE {idx}] Text: {q['text'][:200]}{'...' if len(q['text'], file=sys.stdout, flush=True) > 200 else ''}")
             else:
-                logger.info("[QURAN SEARCH] No Quran verses found")
+                print("[QURAN SEARCH] No Quran verses found", file=sys.stdout, flush=True)
             
             if unique_hadiths:
                 context_text += f"\nHadiths (Found {len(unique_hadiths)}):\n"
@@ -202,18 +192,18 @@ async def get_guidance(request: GuidanceRequest):
                         "url": hadith['citation_url']
                     })
                     # Log COMPLETE Hadith details being sent to Gemini (not truncated)
-                    logger.info(f"  [HADITH {idx}] Collection: {hadith.get('book', 'Unknown')}")
-                    logger.info(f"  [HADITH {idx}] Hadith Number: {hadith.get('hadithnumber', 'N/A')}")
-                    logger.info(f"  [HADITH {idx}] Arabic Number: {hadith.get('arabicnumber', 'N/A')}")
-                    logger.info(f"  [HADITH {idx}] Reference: {hadith.get('reference', {})}")
-                    logger.info(f"  [HADITH {idx}] Citation URL: {hadith.get('citation_url', '')}")
-                    logger.info(f"  [HADITH {idx}] FULL Text: {hadith.get('text', '')}")  # Full text, not truncated
+                    print(f"  [HADITH {idx}] Collection: {hadith.get('book', 'Unknown', file=sys.stdout, flush=True)}")
+                    print(f"  [HADITH {idx}] Hadith Number: {hadith.get('hadithnumber', 'N/A', file=sys.stdout, flush=True)}")
+                    print(f"  [HADITH {idx}] Arabic Number: {hadith.get('arabicnumber', 'N/A', file=sys.stdout, flush=True)}")
+                    print(f"  [HADITH {idx}] Reference: {hadith.get('reference', {}, file=sys.stdout, flush=True)}")
+                    print(f"  [HADITH {idx}] Citation URL: {hadith.get('citation_url', '', file=sys.stdout, flush=True)}")
+                    print(f"  [HADITH {idx}] FULL Text: {hadith.get('text', '', file=sys.stdout, flush=True)}")  # Full text, not truncated
             else:
-                logger.info("[HADITH SEARCH] No Hadiths found")
+                print("[HADITH SEARCH] No Hadiths found", file=sys.stdout, flush=True)
                 
-            logger.info("="*80)
-            logger.info(f"[SEARCH SUMMARY] Found {len(quran_results)} Quran verses and {len(unique_hadiths)} Hadiths")
-            logger.info("="*80)
+            print("="*80, file=sys.stdout, flush=True)
+            print(f"[SEARCH SUMMARY] Found {len(quran_results, file=sys.stdout, flush=True)} Quran verses and {len(unique_hadiths)} Hadiths")
+            print("="*80, file=sys.stdout, flush=True)
 
         # 3. Construct Main Prompt based on Source
         base_instruction = """
@@ -280,18 +270,18 @@ async def get_guidance(request: GuidanceRequest):
         # Note: We append our manually found citations to the AI's response later, 
         # or we can ask AI to include them. Let's append them manually to ensure they are accurate to what we found.
         
-        logger.info("[GEMINI REQUEST] Sending final guidance request to Gemini...")
-        logger.info(f"[GEMINI REQUEST] Prompt: {prompt}")
-        logger.info(f"[GEMINI REQUEST] Prompt length: {len(prompt)} characters")
+        print("[GEMINI REQUEST] Sending final guidance request to Gemini...", file=sys.stdout, flush=True)
+        print(f"[GEMINI REQUEST] Prompt: {prompt}", file=sys.stdout, flush=True)
+        print(f"[GEMINI REQUEST] Prompt length: {len(prompt, file=sys.stdout, flush=True)} characters")
         
         response = model.generate_content(
             prompt,
             generation_config={"response_mime_type": "application/json"}
         )
         
-        logger.info("[GEMINI RESPONSE] Received response from Gemini")
+        print("[GEMINI RESPONSE] Received response from Gemini", file=sys.stdout, flush=True)
         response_text = response.text
-        logger.info(f"[GEMINI RESPONSE] Response length: {len(response_text)} characters")
+        print(f"[GEMINI RESPONSE] Response length: {len(response_text, file=sys.stdout, flush=True)} characters")
         
         # Clean up
         if response_text.startswith("```json"):
@@ -300,11 +290,11 @@ async def get_guidance(request: GuidanceRequest):
             response_text = response_text[:-3]
             
         data = json.loads(response_text.strip())
-        logger.info(f"[GEMINI RESPONSE] Parsed JSON successfully")
+        print(f"[GEMINI RESPONSE] Parsed JSON successfully", file=sys.stdout, flush=True)
         
         # Log truncated response
         truncated_data = truncate_json_for_log(data, max_text_length=150)
-        logger.info(f"[GEMINI RESPONSE] Response data: {json.dumps(truncated_data, indent=2)}")
+        print(f"[GEMINI RESPONSE] Response data: {json.dumps(truncated_data, indent=2)}", file=sys.stdout, flush=True)
         
         # Merge citations if valid answer
         if "answer" in data and request.source in ["external", "both"]:
@@ -319,12 +309,12 @@ async def get_guidance(request: GuidanceRequest):
                     if c["url"] not in existing_urls:
                         data.setdefault("citations", []).append(c)
         
-        logger.info("[SUCCESS] Returning guidance response to user")
-        logger.info("="*80)
+        print("[SUCCESS] Returning guidance response to user", file=sys.stdout, flush=True)
+        print("="*80, file=sys.stdout, flush=True)
         return data
 
     except Exception as e:
-        logger.error(f"Error processing request: {e}", exc_info=True)
+        print(f"Error processing request: {e}", file=sys.stdout, flush=True)
         error_msg = str(e).lower()
         if "quota" in error_msg or "resource exhausted" in error_msg or "429" in error_msg:
             raise HTTPException(status_code=429, detail="API quota exceeded. Please try again later.")
@@ -355,26 +345,26 @@ async def get_api_key():
     In serverless/production, this returns a masked version for security.
     """
     try:
-        logger.info("[GET-API-KEY] Endpoint called")
-        logger.info(f"[GET-API-KEY] IS_SERVERLESS: {IS_SERVERLESS}")
-        logger.info(f"[GET-API-KEY] API_KEY exists: {bool(API_KEY)}")
+        print("[GET-API-KEY] Endpoint called", file=sys.stdout, flush=True)
+        print(f"[GET-API-KEY] IS_SERVERLESS: {IS_SERVERLESS}", file=sys.stdout, flush=True)
+        print(f"[GET-API-KEY] API_KEY exists: {bool(API_KEY, file=sys.stdout, flush=True)}")
         
         if IS_SERVERLESS:
             # In production, return masked key for security
             if API_KEY:
                 masked_key = API_KEY[:8] + "..." + API_KEY[-4:] if len(API_KEY) > 12 else "***"
-                logger.info(f"[GET-API-KEY] Returning masked key in serverless mode")
+                print(f"[GET-API-KEY] Returning masked key in serverless mode", file=sys.stdout, flush=True)
                 return {"apiKey": masked_key, "isProduction": True}
             else:
-                logger.warning("[GET-API-KEY] No API key found in serverless environment")
+                print("[GET-API-KEY] No API key found in serverless environment", file=sys.stdout, flush=True)
                 return {"apiKey": "", "isProduction": True}
         else:
             # In development, return full key
-            logger.info(f"[GET-API-KEY] Returning full key in development mode")
+            print(f"[GET-API-KEY] Returning full key in development mode", file=sys.stdout, flush=True)
             return {"apiKey": API_KEY or "", "isProduction": False}
     except Exception as e:
-        logger.error(f"[GET-API-KEY] Error: {str(e)}")
-        logger.error(f"[GET-API-KEY] Traceback: {traceback.format_exc()}")
+        print(f"[GET-API-KEY] Error: {str(e)}", file=sys.stdout, flush=True)
+        print(f"[GET-API-KEY] Traceback: {traceback.format_exc()}", file=sys.stdout, flush=True)
         raise HTTPException(
             status_code=500,
             detail=f"Error retrieving API key: {str(e)}"
@@ -387,12 +377,12 @@ async def save_api_key(request: Request):
     Note: This endpoint is disabled in serverless/production environments.
     """
     try:
-        logger.info("[SAVE-API-KEY] Endpoint called")
-        logger.info(f"[SAVE-API-KEY] IS_SERVERLESS: {IS_SERVERLESS}")
+        print("[SAVE-API-KEY] Endpoint called", file=sys.stdout, flush=True)
+        print(f"[SAVE-API-KEY] IS_SERVERLESS: {IS_SERVERLESS}", file=sys.stdout, flush=True)
         
         # Disable in serverless environment
         if IS_SERVERLESS:
-            logger.warning("[SAVE-API-KEY] Attempted to save API key in serverless environment")
+            print("[SAVE-API-KEY] Attempted to save API key in serverless environment", file=sys.stdout, flush=True)
             raise HTTPException(
                 status_code=403,
                 detail="API key saving is disabled in production. Please set GEMINI_API_KEY environment variable in Vercel dashboard."
@@ -401,28 +391,28 @@ async def save_api_key(request: Request):
         # Parse request body
         try:
             body = await request.json()
-            logger.info(f"[SAVE-API-KEY] Request body parsed successfully")
+            print(f"[SAVE-API-KEY] Request body parsed successfully", file=sys.stdout, flush=True)
         except Exception as e:
-            logger.error(f"[SAVE-API-KEY] Failed to parse request body: {str(e)}")
+            print(f"[SAVE-API-KEY] Failed to parse request body: {str(e, file=sys.stdout, flush=True)}")
             raise HTTPException(status_code=400, detail="Invalid JSON in request body")
         
         new_key = body.get("apiKey", "").strip()
-        logger.info(f"[SAVE-API-KEY] API key length: {len(new_key) if new_key else 0}")
+        print(f"[SAVE-API-KEY] API key length: {len(new_key, file=sys.stdout, flush=True) if new_key else 0}")
         
         if not new_key:
-            logger.warning("[SAVE-API-KEY] Empty API key provided")
+            print("[SAVE-API-KEY] Empty API key provided", file=sys.stdout, flush=True)
             raise HTTPException(status_code=400, detail="API key cannot be empty")
         
         # Path to .env in root directory (one level up from backend)
         env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
-        logger.info(f"[SAVE-API-KEY] .env path: {env_path}")
+        print(f"[SAVE-API-KEY] .env path: {env_path}", file=sys.stdout, flush=True)
         
         # Read existing .env content
         env_lines = []
         key_found = False
         
         if os.path.exists(env_path):
-            logger.info(f"[SAVE-API-KEY] .env file exists, reading...")
+            print(f"[SAVE-API-KEY] .env file exists, reading...", file=sys.stdout, flush=True)
             with open(env_path, "r", encoding="utf-8") as f:
                 env_lines = f.readlines()
             
@@ -431,32 +421,32 @@ async def save_api_key(request: Request):
                 if line.startswith("GEMINI_API_KEY="):
                     env_lines[i] = f"GEMINI_API_KEY={new_key}\n"
                     key_found = True
-                    logger.info(f"[SAVE-API-KEY] Updated existing key at line {i}")
+                    print(f"[SAVE-API-KEY] Updated existing key at line {i}", file=sys.stdout, flush=True)
                     break
         else:
-            logger.info(f"[SAVE-API-KEY] .env file doesn't exist, will create new")
+            print(f"[SAVE-API-KEY] .env file doesn't exist, will create new", file=sys.stdout, flush=True)
         
         # Add new key if not found
         if not key_found:
             env_lines.append(f"GEMINI_API_KEY={new_key}\n")
-            logger.info(f"[SAVE-API-KEY] Added new API key")
+            print(f"[SAVE-API-KEY] Added new API key", file=sys.stdout, flush=True)
         
         # Write back to .env
         with open(env_path, "w", encoding="utf-8") as f:
             f.writelines(env_lines)
-        logger.info(f"[SAVE-API-KEY] Successfully wrote to .env file")
+        print(f"[SAVE-API-KEY] Successfully wrote to .env file", file=sys.stdout, flush=True)
         
         # Reload environment (requires server restart for full effect)
         os.environ["GEMINI_API_KEY"] = new_key
         
-        logger.info("[SAVE-API-KEY] API key updated successfully")
+        print("[SAVE-API-KEY] API key updated successfully", file=sys.stdout, flush=True)
         return {"success": True, "message": "API key saved. Please restart the server for changes to take full effect."}
     
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"[SAVE-API-KEY] Unexpected error: {str(e)}")
-        logger.error(f"[SAVE-API-KEY] Traceback: {traceback.format_exc()}")
+        print(f"[SAVE-API-KEY] Unexpected error: {str(e)}", file=sys.stdout, flush=True)
+        print(f"[SAVE-API-KEY] Traceback: {traceback.format_exc()}", file=sys.stdout, flush=True)
         raise HTTPException(status_code=500, detail=f"Error saving API key: {str(e)}")
 
 

@@ -1,9 +1,7 @@
 import requests
 import urllib.parse
-import logging
+import sys
 import time
-
-logger = logging.getLogger("IslamicGuideAI")
 
 def search_quran(keyword: str):
     """
@@ -11,30 +9,30 @@ def search_quran(keyword: str):
     Returns top 3 matches.
     """
     if not keyword:
-        logger.warning("[QURAN API] No keyword provided, returning empty results")
+        print("[QURAN API] No keyword provided, returning empty results")
         return []
         
     encoded = urllib.parse.quote(keyword)
     url = f"https://api.alquran.cloud/v1/search/{encoded}/all/en"
-    logger.info(f"[QURAN API] Request URL: {url}")
-    logger.info(f"[QURAN API] Request Method: GET")
-    logger.info(f"[QURAN API] Request Timeout: 10 seconds")
+    print(f"[QURAN API] Request URL: {url}")
+    print(f"[QURAN API] Request Method: GET")
+    print(f"[QURAN API] Request Timeout: 10 seconds")
     
     try:
         start_time = time.time()
         resp = requests.get(url, timeout=10)
         elapsed_time = time.time() - start_time
         
-        logger.info(f"[QURAN API] Response Status: {resp.status_code}")
-        logger.info(f"[QURAN API] Response Time: {elapsed_time:.2f} seconds")
-        logger.info(f"[QURAN API] Response Headers: {dict(resp.headers)}")
-        logger.info(f"[QURAN API] Response Size: {len(resp.content)} bytes")
+        print(f"[QURAN API] Response Status: {resp.status_code}")
+        print(f"[QURAN API] Response Time: {elapsed_time:.2f} seconds")
+        print(f"[QURAN API] Response Headers: {dict(resp.headers)}")
+        print(f"[QURAN API] Response Size: {len(resp.content)} bytes")
         
         if resp.status_code == 200:
             data = resp.json()
             total_matches = data.get("data", {}).get("count", 0)
-            logger.info(f"[QURAN API] Total matches found: {total_matches}")
-            logger.info(f"[QURAN API] Response JSON structure: code={data.get('code')}, status={data.get('status')}")
+            print(f"[QURAN API] Total matches found: {total_matches}")
+            print(f"[QURAN API] Response JSON structure: code={data.get('code')}, status={data.get('status')}")
             
             if data.get("data") and data["data"].get("matches"):
                 results = [
@@ -47,22 +45,22 @@ def search_quran(keyword: str):
                     }
                     for m in data["data"]["matches"][:3]
                 ]
-                logger.info(f"[QURAN API] Returning top {len(results)} results")
+                print(f"[QURAN API] Returning top {len(results)} results")
                 for idx, result in enumerate(results, 1):
-                    logger.info(f"[QURAN API] Result {idx}: Surah {result['surah']}, Verse {result['numberInSurah']}")
-                    logger.info(f"[QURAN API] Result {idx} Text: {result['text'][:100]}...")
+                    print(f"[QURAN API] Result {idx}: Surah {result['surah']}, Verse {result['numberInSurah']}")
+                    print(f"[QURAN API] Result {idx} Text: {result['text'][:100]}...")
                 return results
         else:
-            logger.error(f"[QURAN API] API returned status code {resp.status_code}")
-            logger.error(f"[QURAN API] Response Body: {resp.text[:500]}...")
+            print(f"[QURAN API] API returned status code {resp.status_code}")
+            print(f"[QURAN API] Response Body: {resp.text[:500]}...")
     except requests.exceptions.Timeout:
-        logger.error(f"[QURAN API] Request timed out after 10 seconds")
+        print(f"[QURAN API] Request timed out after 10 seconds")
     except requests.exceptions.RequestException as e:
-        logger.error(f"[QURAN API] Request failed: {e}", exc_info=True)
+        print(f"[QURAN API] Request failed: {e}")
     except Exception as e:
-        logger.error(f"[QURAN API] Error searching Quran: {e}", exc_info=True)
+        print(f"[QURAN API] Error searching Quran: {e}")
     
-    logger.info("[QURAN API] No results found, returning empty list")
+    print("[QURAN API] No results found, returning empty list")
     return []
 
 def search_hadith(topic: str, collections: list = None):
@@ -76,7 +74,7 @@ def search_hadith(topic: str, collections: list = None):
                     If None, searches all major collections
     """
     if not topic:
-        logger.warning("[HADITH API] No topic provided, returning empty list")
+        print("[HADITH API] No topic provided, returning empty list")
         return []
     
     # Default to all major collections if none specified
@@ -88,14 +86,14 @@ def search_hadith(topic: str, collections: list = None):
     
     all_matches = []
     
-    logger.info(f"[HADITH SEARCH] Starting search for topic: '{topic}' across {len(collections)} collections")
-    logger.info(f"[HADITH SEARCH] Collections: {', '.join(collection_names)}")
-    logger.info("="*80)
+    print(f"[HADITH SEARCH] Starting search for topic: '{topic}' across {len(collections)} collections")
+    print(f"[HADITH SEARCH] Collections: {', '.join(collection_names)}")
+    print("="*80)
     
     for collection_code in collections:
         # Extract book name (remove 'eng-' prefix if present)
         book = collection_code.replace('eng-', '') if collection_code.startswith('eng-') else collection_code
-        logger.info(f"[HADITH API] Searching in collection: '{book}'")
+        print(f"[HADITH API] Searching in collection: '{book}'")
         
         base = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions"
         urls = [
@@ -107,57 +105,57 @@ def search_hadith(topic: str, collections: list = None):
         hadiths = None
         for idx, u in enumerate(urls, 1):
             try:
-                logger.info(f"[HADITH API] Attempt {idx}/{len(urls)} - Request URL: {u}")
-                logger.info(f"[HADITH API] Request Method: GET")
-                logger.info(f"[HADITH API] Request Timeout: 10 seconds")
+                print(f"[HADITH API] Attempt {idx}/{len(urls)} - Request URL: {u}")
+                print(f"[HADITH API] Request Method: GET")
+                print(f"[HADITH API] Request Timeout: 10 seconds")
                 
                 start_time = time.time()
                 r = requests.get(u, timeout=10)
                 elapsed_time = time.time() - start_time
                 
-                logger.info(f"[HADITH API] Response Status: {r.status_code}")
-                logger.info(f"[HADITH API] Response Time: {elapsed_time:.2f} seconds")
-                logger.info(f"[HADITH API] Response Headers: {dict(r.headers)}")
-                logger.info(f"[HADITH API] Response Size: {len(r.content)} bytes")
+                print(f"[HADITH API] Response Status: {r.status_code}")
+                print(f"[HADITH API] Response Time: {elapsed_time:.2f} seconds")
+                print(f"[HADITH API] Response Headers: {dict(r.headers)}")
+                print(f"[HADITH API] Response Size: {len(r.content)} bytes")
                 
                 if r.status_code == 200:
                     json_data = r.json()
-                    logger.info(f"[HADITH API] Response JSON keys: {list(json_data.keys())}")
+                    print(f"[HADITH API] Response JSON keys: {list(json_data.keys())}")
                     
                     if json_data.get("hadiths"):
                         hadiths = json_data["hadiths"]
-                        logger.info(f"[HADITH API] Successfully loaded {len(hadiths)} hadiths from '{book}' collection")
+                        print(f"[HADITH API] Successfully loaded {len(hadiths)} hadiths from '{book}' collection")
                         metadata = json_data.get('metadata', {})
                         if metadata:
-                            logger.info(f"[HADITH API] Metadata - Name: {metadata.get('name', 'N/A')}, Sections: {len(metadata.get('sections', {}))}")
+                            print(f"[HADITH API] Metadata - Name: {metadata.get('name', 'N/A')}, Sections: {len(metadata.get('sections', {}))}")
                         break
                     else:
-                        logger.warning(f"[HADITH API] No 'hadiths' key in response from URL {idx}")
+                        print(f"[HADITH API] No 'hadiths' key in response from URL {idx}")
                 else:
-                    logger.warning(f"[HADITH API] Status {r.status_code} from URL {idx}")
-                    logger.warning(f"[HADITH API] Response Body: {r.text[:200]}...")
+                    print(f"[HADITH API] Status {r.status_code} from URL {idx}")
+                    print(f"[HADITH API] Response Body: {r.text[:200]}...")
             except requests.exceptions.Timeout:
-                logger.warning(f"[HADITH API] Request timed out for URL {idx}")
+                print(f"[HADITH API] Request timed out for URL {idx}")
                 continue
             except requests.exceptions.RequestException as e:
-                logger.warning(f"[HADITH API] Request failed for URL {idx}: {e}")
+                print(f"[HADITH API] Request failed for URL {idx}: {e}")
                 continue
             except Exception as e:
-                logger.warning(f"[HADITH API] Failed to load from URL {idx}: {e}")
+                print(f"[HADITH API] Failed to load from URL {idx}: {e}")
                 continue
                 
         if not hadiths:
-            logger.warning(f"[HADITH API] Could not load hadith collection '{book}' from any URL")
+            print(f"[HADITH API] Could not load hadith collection '{book}' from any URL")
             continue
             
         topic_lower = topic.lower()
-        logger.info(f"[HADITH API] Searching for '{topic}' in {len(hadiths)} hadiths from '{book}'...")
+        print(f"[HADITH API] Searching for '{topic}' in {len(hadiths)} hadiths from '{book}'...")
         
         # Search for topic in hadith text
         matches = [h for h in hadiths if topic_lower in h.get("text", "").lower()]
         
         if matches:
-            logger.info(f"[HADITH API] Found {len(matches)} matches in '{book}'")
+            print(f"[HADITH API] Found {len(matches)} matches in '{book}'")
             # Take top 2 matches from each collection to avoid overwhelming results
             for match in matches[:2]:
                 hadith_number = match.get("hadithnumber", "")
@@ -176,20 +174,20 @@ def search_hadith(topic: str, collections: list = None):
                 all_matches.append(hadith_data)
                 
                 # Log each match details
-                logger.info(f"  [MATCH] Collection: {book}, Hadith #: {hadith_number}")
-                logger.info(f"  [MATCH] URL: {citation_url}")
-                logger.info(f"  [MATCH] Text Preview: {match.get('text', '')[:150]}...")
+                print(f"  [MATCH] Collection: {book}, Hadith #: {hadith_number}")
+                print(f"  [MATCH] URL: {citation_url}")
+                print(f"  [MATCH] Text Preview: {match.get('text', '')[:150]}...")
         else:
-            logger.info(f"[HADITH API] No matches found in '{book}'")
+            print(f"[HADITH API] No matches found in '{book}'")
     
-    logger.info("="*80)
-    logger.info(f"[HADITH SEARCH] Total matches found across all collections: {len(all_matches)}")
+    print("="*80)
+    print(f"[HADITH SEARCH] Total matches found across all collections: {len(all_matches)}")
     
     if all_matches:
-        logger.info(f"[HADITH SEARCH] Returning {len(all_matches)} Hadith results")
+        print(f"[HADITH SEARCH] Returning {len(all_matches)} Hadith results")
         for idx, h in enumerate(all_matches, 1):
-            logger.info(f"  [{idx}] {h['book'].capitalize()}: {h['hadithnumber']} - {h['citation_url']}")
+            print(f"  [{idx}] {h['book'].capitalize()}: {h['hadithnumber']} - {h['citation_url']}")
     else:
-        logger.info("[HADITH SEARCH] No matching hadiths found in any collection")
+        print("[HADITH SEARCH] No matching hadiths found in any collection")
     
     return all_matches
