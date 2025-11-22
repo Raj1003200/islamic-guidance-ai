@@ -472,13 +472,13 @@ if __name__ == "__main__":
         except:
             pass
     
-    print("="*80)
-    print("ISLAMIC DATA PARSERS - DEMONSTRATION")
-    print("="*80)
+    print("="*80, file=sys.stdout, flush=True)
+    print("ISLAMIC DATA PARSERS - DEMONSTRATION", file=sys.stdout, flush=True)
+    print("="*80, file=sys.stdout, flush=True)
     
     # Example: Parse Quran response
-    print("\n1. Quran API Parser Example")
-    print("-" * 40)
+    print("\n1. Quran API Parser Example", file=sys.stdout, flush=True)
+    print("-" * 40, file=sys.stdout, flush=True)
     
     try:
         with open("api_responses/quran_search_Heaven.json", "r", encoding="utf-8") as f:
@@ -487,20 +487,20 @@ if __name__ == "__main__":
         parser = QuranAPIParser()
         top_verses = parser.get_top_verses(quran_data, limit=3)
         
-        print(f"Found {len(top_verses)} verses:")
+        print(f"Found {len(top_verses)} verses:", file=sys.stdout, flush=True)
         for verse in top_verses:
             formatted = parser.format_verse_for_display(verse)
             # Handle encoding errors for Windows console
             try:
-                print(f"\n{formatted}")
+                print(f"\n{formatted}", file=sys.stdout, flush=True)
             except UnicodeEncodeError:
-                print(f"\n{formatted.encode('ascii', 'replace').decode('ascii')}")
+                print(f"\n{formatted.encode('ascii', 'replace').decode('ascii')}", file=sys.stdout, flush=True)
     except FileNotFoundError:
-        print("Quran response file not found")
+        print("Quran response file not found", file=sys.stdout, flush=True)
     
     # Example: Parse Hadith response
-    print("\n\n2. Hadith API Parser Example")
-    print("-" * 40)
+    print("\n\n2. Hadith API Parser Example", file=sys.stdout, flush=True)
+    print("-" * 40, file=sys.stdout, flush=True)
     
     try:
         with open("api_responses/hadith_eng-bukhari.json", "r", encoding="utf-8") as f:
@@ -514,18 +514,18 @@ if __name__ == "__main__":
             limit=2
         )
         
-        print(f"Found {len(matching_hadiths)} hadiths about 'faith':")
+        print(f"Found {len(matching_hadiths)} hadiths about 'faith':", file=sys.stdout, flush=True)
         for hadith in matching_hadiths:
             formatted = hadith_parser.format_hadith_for_display(hadith)
             # Handle encoding errors for Windows console
             try:
-                print(f"\n{formatted}")
+                print(f"\n{formatted}", file=sys.stdout, flush=True)
             except UnicodeEncodeError:
-                print(f"\n{formatted.encode('ascii', 'replace').decode('ascii')}")
+                print(f"\n{formatted.encode('ascii', 'replace').decode('ascii')}", file=sys.stdout, flush=True)
     except FileNotFoundError:
-        print("Hadith response file not found")
+        print("Hadith response file not found", file=sys.stdout, flush=True)
     
-    print("\n" + "="*80)
-    print("PARSERS READY FOR USE")
-    print("="*80)
+    print("\n" + "="*80, file=sys.stdout, flush=True)
+    print("PARSERS READY FOR USE", file=sys.stdout, flush=True)
+    print("="*80, file=sys.stdout, flush=True)
 

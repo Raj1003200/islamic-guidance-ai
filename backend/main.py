@@ -1,35 +1,61 @@
+"""
+Islamic Guidance AI - Main FastAPI Backend Application
+Provides AI-powered Islamic guidance using Gemini AI and external Islamic text APIs
+"""
+
 import os
 import sys
 import json
 import traceback
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request
+import asyncio
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import google.generativeai as genai
+from typing import Optional, List
 
-# Import services
-from backend.services import search_quran, search_hadith
+# Import async services
+from services import (
+    search_quran_async,
+    search_hadith_async
+)
 
 # Load environment variables
 load_dotenv()
 
-# --- Configuration ---
-# Check if running in serverless environment (Vercel)
+# --- Environment Configuration ---
 IS_SERVERLESS = os.getenv("VERCEL") == "1"
+API_KEY = os.getenv("GEMINI_API_KEY")
 
+# --- Print Configuration ---
+print("="*80, file=sys.stdout, flush=True)
 print("Loading IslamicGuideAI Backend Module...", file=sys.stdout, flush=True)
+print(f"Environment: {'SERVERLESS (Vercel)' if IS_SERVERLESS else 'LOCAL DEVELOPMENT'}", file=sys.stdout, flush=True)
+print("="*80, file=sys.stdout, flush=True)
 
-# Helper function to truncate long JSON for logging
+
+# --- Helper Functions ---
 def truncate_json_for_log(data, max_text_length=200):
-    """Truncate long text fields in JSON while preserving structure"""
+    """
+    Truncate long text fields in JSON while preserving structure.
+    Used to make logs readable without massive text dumps.
+    
+    Args:
+        data: Dictionary or list to truncate
+        max_text_length: Maximum length for string fields
+        
+    Returns:
+        Truncated copy of the data structure
+    """
     if isinstance(data, dict):
         result = {}
         for key, value in data.items():
             if isinstance(value, str) and len(value) > max_text_length:
-                result[key] = value[:max_text_length] + f"... [TRUNCATED {len(value)-max_text_length} chars]"
+                truncated = value[:max_text_length]
+                result[key] = f"{truncated}... [TRUNCATED {len(value)-max_text_length} chars]"
             elif isinstance(value, (dict, list)):
                 result[key] = truncate_json_for_log(value, max_text_length)
             else:
@@ -39,371 +65,588 @@ def truncate_json_for_log(data, max_text_length=200):
         return [truncate_json_for_log(item, max_text_length) for item in data]
     return data
 
-# Configure Gemini
-API_KEY = os.getenv("GEMINI_API_KEY")
+
+# --- Gemini AI Configuration ---
 model = None
 
 try:
     if not API_KEY:
-        print("GEMINI_API_KEY not found in .env", file=sys.stdout, flush=True)
+        print("⚠️  GEMINI_API_KEY not found in environment variables", file=sys.stderr, flush=True)
+        print("⚠️  AI features will be disabled until API key is configured", file=sys.stderr, flush=True)
     else:
         genai.configure(api_key=API_KEY)
-        # Use gemini-2.0-flash as verified
-        model = genai.GenerativeModel('gemini-2.0-flash')
-        print("Successfully configured Gemini 2.0 Flash model", file=sys.stdout, flush=True)
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        print("✅ Successfully configured Gemini 2.0 Flash model", file=sys.stdout, flush=True)
 except Exception as e:
-    print(f"Error configuring model: {e}", file=sys.stdout, flush=True)
-    # Don't crash, just leave model as None
+    print(f"❌ Error configuring Gemini model: {e}", file=sys.stderr, flush=True)
+    import traceback
+    traceback.print_exc()
+    model = None
 
-app = FastAPI()
 
-@app.get("/")
-async def root():
-    """Health check endpoint"""
-    return {"status": "ok", "service": "IslamicGuideAI", "version": "1.0.0"}
+# --- FastAPI Application Setup ---
+app = FastAPI(
+    title="Islamic Guidance AI",
+    description="AI-powered Islamic guidance using Quran and Hadith",
+    version="1.0.0"
+)
 
-# CORS configuration
+# CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, specify exact origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
+# --- Request/Response Models ---
 class GuidanceRequest(BaseModel):
+    """Request model for guidance endpoint"""
     query: str
-    source: str = "both" # internal, external, both
-    hadith_collection: list = None  # Optional list of hadith book codes
+    source: str = "both"  # Options: internal, external, both
+    hadith_collection: Optional[List[str]] = None
+
 
 class LogRequest(BaseModel):
+    """Request model for frontend logging"""
     level: str
     message: str
     timestamp: str
 
+
+class APIKeyRequest(BaseModel):
+    """Request model for API key management"""
+    apiKey: str
+
+
+# --- API Endpoints ---
+
+@app.get("/")
+async def root():
+    """
+    Health check endpoint.
+    Returns service status and version information.
+    """
+    return {
+        "status": "ok",
+        "service": "IslamicGuideAI",
+        "version": "1.0.0",
+        "environment": "serverless" if IS_SERVERLESS else "development",
+        "ai_model": "gemini-2.0-flash-exp" if model else "unavailable"
+    }
+
+
 @app.post("/api/log")
 async def log_frontend(request: LogRequest):
     """
-    Endpoint to receive logs from the frontend.
-    Logs to console only (no file writing).
+    Endpoint to receive logs from frontend.
+    Logs to console for monitoring and debugging.
+    
+    Args:
+        request: LogRequest with level, message, and timestamp
+        
+    Returns:
+        Status confirmation
     """
-    print(f"[FRONTEND - {request.level.upper()}] {request.message}", file=sys.stdout, flush=True)
-    return {"status": "logged"}
+    try:
+        # Map log levels to appropriate output streams
+        log_output = sys.stderr if request.level.upper() in ['ERROR', 'WARNING'] else sys.stdout
+        print(
+            f"[FRONTEND {request.timestamp}] [{request.level.upper()}] {request.message}",
+            file=log_output,
+            flush=True
+        )
+        return {"status": "logged"}
+    except Exception as e:
+        print(f"[LOG ENDPOINT] Error logging frontend message: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "message": str(e)}
+
 
 @app.post("/api/guidance")
 async def get_guidance(request: GuidanceRequest):
+    """
+    Main endpoint for AI-powered Islamic guidance.
+    
+    Process Flow:
+    1. Validate query
+    2. Extract keywords using Gemini
+    3. Search Quran and Hadith APIs concurrently
+    4. Generate AI response with context
+    5. Return formatted response with citations
+    
+    Args:
+        request: GuidanceRequest with query, source, and optional collections
+        
+    Returns:
+        JSON response with answer and citations
+        
+    Raises:
+        HTTPException: For validation errors, timeouts, or API failures
+    """
     print("="*80, file=sys.stdout, flush=True)
-    print(f"[USER REQUEST] Received guidance request", file=sys.stdout, flush=True)
-    print(f"Query: {request.query}", file=sys.stdout, flush=True)
-    print(f"Source: {request.source}", file=sys.stdout, flush=True)
+    print(f"[GUIDANCE] New request - Query: {request.query}", file=sys.stdout, flush=True)
+    print(f"[GUIDANCE] Source: {request.source}, Collections: {request.hadith_collection or 'default'}", file=sys.stdout, flush=True)
     print("="*80, file=sys.stdout, flush=True)
     
+    # Validation
     if not request.query or len(request.query) < 10:
-        print("Query validation failed: Query too short", file=sys.stdout, flush=True)
-        raise HTTPException(status_code=400, detail="Query too short")
+        print("[VALIDATION] Query too short (minimum 10 characters)", file=sys.stderr, flush=True)
+        raise HTTPException(
+            status_code=400,
+            detail="Query too short. Please provide at least 10 characters."
+        )
     
     if not model:
-        print("AI model not available", file=sys.stdout, flush=True)
-        raise HTTPException(status_code=503, detail="AI model not available. Please check API key configuration.")
+        print("[ERROR] Gemini model not available", file=sys.stderr, flush=True)
+        raise HTTPException(
+            status_code=503,
+            detail="AI model not available. Please check API key configuration."
+        )
 
     try:
-        # 1. Check relevance (skip if clearly irrelevant, but let's assume relevant for now to save a call or do it in one go)
-        # We will do it in one go with the main prompt to be efficient.
-        
         context_text = ""
         citations = []
+        quran_results = []
+        unique_hadiths = []
         
-        # 2. Perform Search if Source is External or Both
+        # Perform Search if Source is External or Both
         if request.source in ["external", "both"]:
-            print("[KEYWORD EXTRACTION] Extracting keywords for search...", file=sys.stdout, flush=True)
-            # Ask Gemini to extract keywords - improved to handle multi-word queries
+            print("[SEARCH] Extracting keywords...", file=sys.stdout, flush=True)
+            
+            # Extract keywords using Gemini
             keyword_prompt = f"""
-            Extract ALL relevant keywords from this query for searching Islamic texts (Quran/Hadith). 
-            Include multi-word concepts as separate keywords.
-            Return ONLY the keywords separated by commas.
-            
-            Examples:
-            - Query: "good life partner" → life, partner, marriage, spouse
-            - Query: "dealing with anxiety" → anxiety, worry, stress, peace
-            
-            Query: "{request.query}"
+Extract the 3 most relevant keywords from this query for searching Islamic texts (Quran/Hadith).
+Focus on core concepts, not common words.
+Return ONLY the keywords separated by commas, nothing else.
+
+Examples:
+- Query: "How to deal with a difficult life partner" → marriage, patience, relationship
+- Query: "Feeling anxious about the future" → anxiety, trust, future
+
+Query: "{request.query}"
             """
-            print(f"[GEMINI REQUEST] Sending keyword extraction request", file=sys.stdout, flush=True)
-            print(f"[GEMINI REQUEST] Prompt: {keyword_prompt}", file=sys.stdout, flush=True)
-            kw_response = model.generate_content(keyword_prompt)
-            keywords = kw_response.text.strip()
-            print(f"[GEMINI RESPONSE] Extracted keywords: '{keywords}'", file=sys.stdout, flush=True)
             
+            print("[GEMINI REQUEST] Sending keyword extraction request", file=sys.stdout, flush=True)
             
-            # Search Quran
-            print(f"[QURAN SEARCH] Searching Quran with keywords: '{keywords}'", file=sys.stdout, flush=True)
-            quran_results = search_quran(keywords)
-            print(f"[QURAN SEARCH] Found {len(quran_results, file=sys.stdout, flush=True)} Quran verses")
+            try:
+                kw_response = model.generate_content(keyword_prompt)
+                keywords = kw_response.text.strip()
+                print(f"[KEYWORDS] Extracted: '{keywords}'", file=sys.stdout, flush=True)
+            except Exception as e:
+                print(f"[ERROR] Keyword extraction failed: {e}", file=sys.stderr, flush=True)
+                # Fallback: use first 3 words from query
+                keywords = " ".join(request.query.split()[:3])
+                print(f"[KEYWORDS] Using fallback: '{keywords}'", file=sys.stdout, flush=True)
             
-            # Search Hadith - use all keywords for better search coverage
-            # Convert comma-separated keywords to list and search for each
+            # Prepare for concurrent searches
             keyword_list = [k.strip() for k in keywords.split(',') if k.strip()]
-            all_hadith_results = []
+            keyword_list = keyword_list[:3]  # Limit to 3 keywords max
             
-            # Get selected hadith collections from request, default to Kutub al-Sittah
+            print(f"[SEARCH] Using {len(keyword_list)} keywords: {keyword_list}", file=sys.stdout, flush=True)
+            
+            # Get selected Hadith collections
             selected_collections = request.hadith_collection or [
-                "eng-bukhari", "eng-muslim", "eng-abudawud", 
-                "eng-tirmidhi", "eng-nasai", "eng-ibnmajah"
+                "eng-bukhari",
+                "eng-muslim",
+                "eng-abudawud",
+                "eng-tirmidhi",
+                "eng-nasai",
+                "eng-ibnmajah"
             ]
             
-            print(f"[HADITH SEARCH] Using collections: {selected_collections}", file=sys.stdout, flush=True)
-            print(f"[HADITH SEARCH] Searching with {len(keyword_list, file=sys.stdout, flush=True)} keywords: {keyword_list}")
-            for keyword in keyword_list:
-                print(f"[HADITH SEARCH] Searching Hadith with keyword: '{keyword}'", file=sys.stdout, flush=True)
-                hadith_results = search_hadith(keyword, collections=selected_collections)
-                if hadith_results:
-                    all_hadith_results.extend(hadith_results)
-                    print(f"[HADITH SEARCH] Found {len(hadith_results, file=sys.stdout, flush=True)} Hadiths for keyword '{keyword}'")
+            print(f"[SEARCH] Collections: {[c.replace('eng-', '') for c in selected_collections]}", file=sys.stdout, flush=True)
+            print("[SEARCH] Starting concurrent API searches...", file=sys.stdout, flush=True)
             
-            # Remove duplicates based on hadithnumber and book
-            seen = set()
-            unique_hadiths = []
-            for h in all_hadith_results:
-                key = (h.get('book', ''), h.get('hadithnumber', ''))
-                if key not in seen:
-                    seen.add(key)
-                    unique_hadiths.append(h)
+            # Execute searches concurrently using asyncio.gather
+            try:
+                # Create search tasks
+                quran_task = search_quran_async(keywords, max_results=3)
+                
+                hadith_tasks = [
+                    search_hadith_async(
+                        keyword,
+                        collections=selected_collections,
+                        max_per_collection=1  # Limit to 1 per collection per keyword
+                    )
+                    for keyword in keyword_list
+                ]
+                
+                # Wait for all searches with timeout
+                search_timeout = 8  # seconds (must be less than Vercel's limit)
+                search_results = await asyncio.wait_for(
+                    asyncio.gather(quran_task, *hadith_tasks, return_exceptions=True),
+                    timeout=search_timeout
+                )
+                
+                # Process Quran results
+                if isinstance(search_results[0], Exception):
+                    print(f"[ERROR] Quran search failed: {search_results[0]}", file=sys.stderr, flush=True)
+                    quran_results = []
+                else:
+                    quran_results = search_results[0]
+                    print(f"[SEARCH] Found {len(quran_results)} Quran verses", file=sys.stdout, flush=True)
+                
+                # Process Hadith results
+                all_hadith_results = []
+                for idx, result in enumerate(search_results[1:], 1):
+                    if isinstance(result, Exception):
+                        print(f"[ERROR] Hadith search {idx} failed: {result}", file=sys.stderr, flush=True)
+                    elif result:
+                        all_hadith_results.extend(result)
+                        print(f"[SEARCH] Found {len(all_hadith_results)} total hadiths", file=sys.stdout, flush=True)
+                
+                # Remove duplicate hadiths
+                seen = set()
+                unique_hadiths = []
+                for hadith in all_hadith_results:
+                    key = (hadith.get('book', ''), hadith.get('hadithnumber', ''))
+                    if key not in seen:
+                        seen.add(key)
+                        unique_hadiths.append(hadith)
+                
+                print(f"[SEARCH] Total unique hadiths: {len(unique_hadiths)}", file=sys.stdout, flush=True)
+                
+            except asyncio.TimeoutError:
+                print(f"[ERROR] Searches timed out after {search_timeout}s", file=sys.stderr, flush=True)
+                # Continue with empty results rather than failing
+                quran_results = []
+                unique_hadiths = []
             
-            print(f"[HADITH SEARCH] Total unique Hadiths found: {len(unique_hadiths, file=sys.stdout, flush=True)}")
-            
-            # Build Context
+            # Build context from search results
             if quran_results:
-                context_text += "\nQuran Verses:\n"
-                for idx, q in enumerate(quran_results, 1):
-                    context_text += f"- {q['text']} (Surah {q['surah']} {q['number']})\n"
-                    citations.append({"title": f"Quran {q['surah']} {q['number']}", "url": f"https://quran.com/{q['number']}"})
-                    # Log each verse details
-                    print(f"  [VERSE {idx}] Surah: {q['surah']}, Number: {q['number']}, Verse in Surah: {q['numberInSurah']}", file=sys.stdout, flush=True)
-                    print(f"  [VERSE {idx}] Text: {q['text'][:200]}{'...' if len(q['text'], file=sys.stdout, flush=True) > 200 else ''}")
+                context_text += "\n📖 Quran Verses:\n"
+                for idx, verse in enumerate(quran_results, 1):
+                    context_text += f"- {verse['text']} (Surah {verse['surah']} {verse['number']})\n"
+                    citations.append({
+                        "title": f"Quran {verse['surah']} {verse['number']}",
+                        "url": f"https://quran.com/{verse['number']}"
+                    })
+                    print(f"  [VERSE {idx}] {verse['surah']}:{verse['numberInSurah']}", file=sys.stdout, flush=True)
             else:
-                print("[QURAN SEARCH] No Quran verses found", file=sys.stdout, flush=True)
+                print("[SEARCH] No Quran verses found", file=sys.stdout, flush=True)
             
             if unique_hadiths:
-                context_text += f"\nHadiths (Found {len(unique_hadiths)}):\n"
+                context_text += f"\n📚 Hadiths (Found {len(unique_hadiths)}):\n"
                 for idx, hadith in enumerate(unique_hadiths, 1):
-                    context_text += f"- {hadith['text']} ({hadith['source']}, Hadith #{hadith['hadithnumber']})\n"
+                    context_text += (
+                        f"- {hadith['text']} "
+                        f"({hadith['source']}, Hadith #{hadith['hadithnumber']})\n"
+                    )
                     citations.append({
-                        "title": f"{hadith['source']} - Hadith {hadith['hadithnumber']}", 
+                        "title": f"{hadith['source']} - Hadith {hadith['hadithnumber']}",
                         "url": hadith['citation_url']
                     })
-                    # Log COMPLETE Hadith details being sent to Gemini (not truncated)
-                    print(f"  [HADITH {idx}] Collection: {hadith.get('book', 'Unknown', file=sys.stdout, flush=True)}")
-                    print(f"  [HADITH {idx}] Hadith Number: {hadith.get('hadithnumber', 'N/A', file=sys.stdout, flush=True)}")
-                    print(f"  [HADITH {idx}] Arabic Number: {hadith.get('arabicnumber', 'N/A', file=sys.stdout, flush=True)}")
-                    print(f"  [HADITH {idx}] Reference: {hadith.get('reference', {}, file=sys.stdout, flush=True)}")
-                    print(f"  [HADITH {idx}] Citation URL: {hadith.get('citation_url', '', file=sys.stdout, flush=True)}")
-                    print(f"  [HADITH {idx}] FULL Text: {hadith.get('text', '', file=sys.stdout, flush=True)}")  # Full text, not truncated
+                    print(f"  [HADITH {idx}] {hadith['book']}:{hadith['hadithnumber']}", file=sys.stdout, flush=True)
             else:
-                print("[HADITH SEARCH] No Hadiths found", file=sys.stdout, flush=True)
-                
+                print("[SEARCH] No hadiths found", file=sys.stdout, flush=True)
+            
             print("="*80, file=sys.stdout, flush=True)
-            print(f"[SEARCH SUMMARY] Found {len(quran_results, file=sys.stdout, flush=True)} Quran verses and {len(unique_hadiths)} Hadiths")
+            print(
+                f"[SEARCH SUMMARY] Results: {len(quran_results)} Quran verses, "
+                f"{len(unique_hadiths)} Hadiths",
+                file=sys.stdout, 
+                flush=True
+            )
             print("="*80, file=sys.stdout, flush=True)
 
-        # 3. Construct Main Prompt based on Source
+        # Construct Gemini prompt based on source selection
         base_instruction = """
-        You are an Islamic Guidance AI. Provide a helpful, empathetic Islamic perspective to the user's situation.
+You are an Islamic Guidance AI assistant. Provide helpful, empathetic Islamic perspective 
+to the user's question with wisdom from Islamic teachings.
         """
         
         if request.source == "internal":
+            # Use only Gemini's internal knowledge
             prompt = f"""
-            {base_instruction}
-            User Query: "{request.query}"
-            
-            Use your internal knowledge to answer.
+{base_instruction}
+
+User Query: "{request.query}"
+
+Use your internal knowledge of Islamic teachings to provide guidance.
             """
+            
         elif request.source == "external":
-            # Check if we have any sources
+            # Use only external sources
             has_sources = bool(quran_results or unique_hadiths)
             
             if not has_sources:
                 prompt = f"""
-                {base_instruction}
-                User Query: "{request.query}"
-                
-                CONTEXT FROM SOURCES:
-                Quran: No sources found
-                Hadith: No sources found
-                
-                INSTRUCTION: No specific Quran verses or Hadiths were found for this query in our search. 
-                Politely inform the user that no specific sources were found, but offer general Islamic comfort and guidance.
-                Suggest they can search directly on Quran.com and Sunnah.com for more specific references.
+{base_instruction}
+
+User Query: "{request.query}"
+
+CONTEXT FROM SOURCES:
+❌ Quran: No specific verses found
+❌ Hadith: No specific hadiths found
+
+INSTRUCTION: No specific Quran verses or Hadiths were found for this query. 
+Politely inform the user that no specific sources were found in our search, 
+but offer general Islamic comfort and guidance based on well-known Islamic principles.
+Suggest they can search directly on Quran.com and Sunnah.com for more references.
                 """
             else:
                 prompt = f"""
-                {base_instruction}
-                User Query: "{request.query}"
-                
-                CONTEXT FROM SOURCES:
-                {context_text}
-                
-                INSTRUCTION: Use ONLY the provided context above to answer. Reference the specific sources provided.
+{base_instruction}
+
+User Query: "{request.query}"
+
+CONTEXT FROM SOURCES:
+{context_text}
+
+INSTRUCTION: Use ONLY the provided context above to answer. 
+Reference the specific sources provided. If the context doesn't fully 
+answer the question, acknowledge this limitation.
                 """
-        else: # both
+                
+        else:  # both
             prompt = f"""
-            {base_instruction}
-            User Query: "{request.query}"
-            
-            CONTEXT FROM SOURCES:
-            {context_text}
-            
-            INSTRUCTION: Combine the provided context with your own knowledge to provide a comprehensive answer. Reference the sources if they are relevant.
+{base_instruction}
+
+User Query: "{request.query}"
+
+CONTEXT FROM SOURCES:
+{context_text}
+
+INSTRUCTION: Combine the provided context with your knowledge of Islamic 
+teachings to provide comprehensive guidance. Prioritize the provided sources 
+when available, and supplement with general Islamic knowledge where appropriate.
             """
 
-        # Add JSON formatting instruction
+        # Add response format instruction
         prompt += """
-        
-        If the query is NOT related to life situations/Islam, return: { "error": "Irrelevant problem" }
-        
-        Otherwise return JSON:
-        {
-            "answer": "Your advice here...",
-            "citations": [ ... ] 
-        }
+
+RESPONSE FORMAT:
+If the query is NOT related to Islamic guidance, life situations, or faith questions, return:
+{ "error": "This question is not related to Islamic guidance. Please ask about Islamic teachings, life situations from an Islamic perspective, or faith-related matters." }
+
+Otherwise return JSON:
+{
+    "answer": "Your detailed, compassionate guidance here...",
+    "citations": []
+}
+
+Note: Citations will be added automatically from the sources. Focus on providing a thoughtful answer.
         """
         
-        # Note: We append our manually found citations to the AI's response later, 
-        # or we can ask AI to include them. Let's append them manually to ensure they are accurate to what we found.
+        print("[GEMINI] Sending final guidance request...", file=sys.stdout, flush=True)
+        print(f"[GEMINI] Prompt length: {len(prompt)} characters", file=sys.stdout, flush=True)
+        print(f"[GEMINI] Context length: {len(context_text)} characters", file=sys.stdout, flush=True)
         
-        print("[GEMINI REQUEST] Sending final guidance request to Gemini...", file=sys.stdout, flush=True)
-        print(f"[GEMINI REQUEST] Prompt: {prompt}", file=sys.stdout, flush=True)
-        print(f"[GEMINI REQUEST] Prompt length: {len(prompt, file=sys.stdout, flush=True)} characters")
-        
-        response = model.generate_content(
-            prompt,
-            generation_config={"response_mime_type": "application/json"}
+        try:
+            # Generate response with JSON format
+            response = model.generate_content(
+                prompt,
+                generation_config={"response_mime_type": "application/json"}
+            )
+            
+            print("[GEMINI] Received response", file=sys.stdout, flush=True)
+            response_text = response.text
+            print(f"[GEMINI] Response length: {len(response_text)} characters", file=sys.stdout, flush=True)
+            
+            # Clean up JSON response
+            if response_text.startswith("```"):
+                response_text = response_text[7:]
+            if response_text.endswith("```"):
+                response_text = response_text[:-3]
+                
+            data = json.loads(response_text.strip())
+            print("[GEMINI] Successfully parsed JSON", file=sys.stdout, flush=True)
+            
+            # Print truncated response for debugging
+            truncated_data = truncate_json_for_log(data, max_text_length=150)
+            print(f"[GEMINI] Data preview: {json.dumps(truncated_data, indent=2)}", file=sys.stdout, flush=True)
+            
+            # Merge citations if we have a valid answer
+            if "answer" in data and request.source in ["external", "both"]:
+                if request.source == "external":
+                    # Use only our found citations for external mode
+                    data["citations"] = citations
+                else:
+                    # Merge citations for 'both' mode (avoid duplicates)
+                    existing_urls = {c.get("url") for c in data.get("citations", [])}
+                    for citation in citations:
+                        if citation["url"] not in existing_urls:
+                            data.setdefault("citations", []).append(citation)
+            
+            print("[SUCCESS] Returning guidance response", file=sys.stdout, flush=True)
+            print("="*80, file=sys.stdout, flush=True)
+            return data
+            
+        except json.JSONDecodeError as e:
+            print(f"[ERROR] Failed to parse JSON response: {e}", file=sys.stderr, flush=True)
+            print(f"[ERROR] Raw response: {response_text[:500]}", file=sys.stderr, flush=True)
+            raise HTTPException(
+                status_code=500,
+                detail="AI model returned invalid response format"
+            )
+
+    except asyncio.TimeoutError:
+        print("[TIMEOUT] Request exceeded time limit", file=sys.stderr, flush=True)
+        raise HTTPException(
+            status_code=504,
+            detail="Request timed out. Please try a simpler query or try again."
         )
         
-        print("[GEMINI RESPONSE] Received response from Gemini", file=sys.stdout, flush=True)
-        response_text = response.text
-        print(f"[GEMINI RESPONSE] Response length: {len(response_text, file=sys.stdout, flush=True)} characters")
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
         
-        # Clean up
-        if response_text.startswith("```json"):
-            response_text = response_text[7:]
-        if response_text.endswith("```"):
-            response_text = response_text[:-3]
-            
-        data = json.loads(response_text.strip())
-        print(f"[GEMINI RESPONSE] Parsed JSON successfully", file=sys.stdout, flush=True)
-        
-        # Log truncated response
-        truncated_data = truncate_json_for_log(data, max_text_length=150)
-        print(f"[GEMINI RESPONSE] Response data: {json.dumps(truncated_data, indent=2)}", file=sys.stdout, flush=True)
-        
-        # Merge citations if valid answer
-        if "answer" in data and request.source in ["external", "both"]:
-            # We prioritize our found citations, but AI might have added some too (internal knowledge).
-            # Let's just use ours for 'external' mode, and merge for 'both'.
-            if request.source == "external":
-                data["citations"] = citations
-            else:
-                # Merge avoiding duplicates (simple check)
-                existing_urls = {c.get("url") for c in data.get("citations", [])}
-                for c in citations:
-                    if c["url"] not in existing_urls:
-                        data.setdefault("citations", []).append(c)
-        
-        print("[SUCCESS] Returning guidance response to user", file=sys.stdout, flush=True)
-        print("="*80, file=sys.stdout, flush=True)
-        return data
-
     except Exception as e:
-        print(f"Error processing request: {e}", file=sys.stdout, flush=True)
+        print(f"[ERROR] Unexpected error: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
+        
+        # Check for specific error types
         error_msg = str(e).lower()
         if "quota" in error_msg or "resource exhausted" in error_msg or "429" in error_msg:
-            raise HTTPException(status_code=429, detail="API quota exceeded. Please try again later.")
-        raise HTTPException(status_code=500, detail=f"Error generating guidance: {str(e)[:100]}")
+            raise HTTPException(
+                status_code=429,
+                detail="API quota exceeded. Please try again later."
+            )
+        
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating guidance: {str(e)[:100]}"
+        )
 
-# New API endpoints for Quran and Hadith search
 
 @app.get("/api/quran/search")
 async def quran_search_endpoint(keyword: str):
     """
-    Search Quran verses using the external API via Python backend.
+    Direct Quran search endpoint.
+    
+    Args:
+        keyword: Search term for Quran verses
+        
+    Returns:
+        List of matching verses
     """
-    return search_quran(keyword)
+    try:
+        print(f"[API ENDPOINT] Quran search request: '{keyword}'", file=sys.stdout, flush=True)
+        results = await search_quran_async(keyword, max_results=5)
+        return {"results": results, "count": len(results)}
+    except Exception as e:
+        print(f"[QURAN ENDPOINT] Error: {e}", file=sys.stdout, flush=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/hadith/search")
-async def hadith_search_endpoint(topic: str, book: str = "bukhari"):
+async def hadith_search_endpoint(
+    topic: str,
+    collections: Optional[str] = None
+):
     """
-    Search Hadiths for a topic within a given collection.
+    Direct Hadith search endpoint.
+    
+    Args:
+        topic: Search term for Hadiths
+        collections: Comma-separated collection codes (optional)
+        
+    Returns:
+        List of matching hadiths
     """
-    return search_hadith(topic, book)
-
+    try:
+        print(f"[API ENDPOINT] Hadith search request: '{topic}'", file=sys.stdout, flush=True)
+        
+        # Parse collections if provided
+        collection_list = None
+        if collections:
+            collection_list = [c.strip() for c in collections.split(',') if c.strip()]
+        
+        results = await search_hadith_async(
+            topic,
+            collections=collection_list,
+            max_per_collection=3
+        )
+        return {"results": results, "count": len(results)}
+    except Exception as e:
+        print(f"[ERROR] HADITH ENDPOINT: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/get-api-key")
 async def get_api_key():
     """
-    Return the Gemini API key from environment for settings page.
-    In serverless/production, this returns a masked version for security.
+    Return the Gemini API key (masked in production).
+    Used by settings page to display current configuration.
+    
+    Returns:
+        API key (masked if in production) and environment flag
     """
     try:
-        print("[GET-API-KEY] Endpoint called", file=sys.stdout, flush=True)
-        print(f"[GET-API-KEY] IS_SERVERLESS: {IS_SERVERLESS}", file=sys.stdout, flush=True)
-        print(f"[GET-API-KEY] API_KEY exists: {bool(API_KEY, file=sys.stdout, flush=True)}")
+        print("[GET-API-KEY] Request received", file=sys.stdout, flush=True)
+        print(f"[GET-API-KEY] Environment: {'Serverless' if IS_SERVERLESS else 'Development'}", file=sys.stdout, flush=True)
         
         if IS_SERVERLESS:
             # In production, return masked key for security
             if API_KEY:
-                masked_key = API_KEY[:8] + "..." + API_KEY[-4:] if len(API_KEY) > 12 else "***"
-                print(f"[GET-API-KEY] Returning masked key in serverless mode", file=sys.stdout, flush=True)
+                masked_key = (
+                    API_KEY[:8] + "..." + API_KEY[-4:]
+                    if len(API_KEY) > 12
+                    else "***"
+                )
+                print("[GET-API-KEY] Returning masked key", file=sys.stdout, flush=True)
                 return {"apiKey": masked_key, "isProduction": True}
             else:
-                print("[GET-API-KEY] No API key found in serverless environment", file=sys.stdout, flush=True)
+                print("[WARNING] GET-API-KEY: No API key configured", file=sys.stderr, flush=True)
                 return {"apiKey": "", "isProduction": True}
         else:
             # In development, return full key
-            print(f"[GET-API-KEY] Returning full key in development mode", file=sys.stdout, flush=True)
+            print("[GET-API-KEY] Returning full key (development mode)", file=sys.stdout, flush=True)
             return {"apiKey": API_KEY or "", "isProduction": False}
+            
     except Exception as e:
-        print(f"[GET-API-KEY] Error: {str(e)}", file=sys.stdout, flush=True)
-        print(f"[GET-API-KEY] Traceback: {traceback.format_exc()}", file=sys.stdout, flush=True)
+        print(f"[ERROR] GET-API-KEY: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Error retrieving API key: {str(e)}"
         )
 
+
 @app.post("/api/save-api-key")
-async def save_api_key(request: Request):
+async def save_api_key(request: APIKeyRequest):
     """
     Save API key to .env file (development only).
-    Note: This endpoint is disabled in serverless/production environments.
+    Disabled in serverless/production environments.
+    
+    Args:
+        request: APIKeyRequest with new API key
+        
+    Returns:
+        Success message and instructions
+        
+    Raises:
+        HTTPException: If used in production or if save fails
     """
     try:
-        print("[SAVE-API-KEY] Endpoint called", file=sys.stdout, flush=True)
-        print(f"[SAVE-API-KEY] IS_SERVERLESS: {IS_SERVERLESS}", file=sys.stdout, flush=True)
+        print("[SAVE-API-KEY] Request received", file=sys.stdout, flush=True)
         
         # Disable in serverless environment
         if IS_SERVERLESS:
-            print("[SAVE-API-KEY] Attempted to save API key in serverless environment", file=sys.stdout, flush=True)
+            print("[WARNING] SAVE-API-KEY: Attempted in serverless environment", file=sys.stderr, flush=True)
             raise HTTPException(
                 status_code=403,
-                detail="API key saving is disabled in production. Please set GEMINI_API_KEY environment variable in Vercel dashboard."
+                detail=(
+                    "API key saving is disabled in production. "
+                    "Please set GEMINI_API_KEY environment variable in Vercel dashboard."
+                )
             )
         
-        # Parse request body
-        try:
-            body = await request.json()
-            print(f"[SAVE-API-KEY] Request body parsed successfully", file=sys.stdout, flush=True)
-        except Exception as e:
-            print(f"[SAVE-API-KEY] Failed to parse request body: {str(e, file=sys.stdout, flush=True)}")
-            raise HTTPException(status_code=400, detail="Invalid JSON in request body")
-        
-        new_key = body.get("apiKey", "").strip()
-        print(f"[SAVE-API-KEY] API key length: {len(new_key, file=sys.stdout, flush=True) if new_key else 0}")
+        new_key = request.apiKey.strip()
         
         if not new_key:
-            print("[SAVE-API-KEY] Empty API key provided", file=sys.stdout, flush=True)
+            print("[WARNING] SAVE-API-KEY: Empty API key provided", file=sys.stderr, flush=True)
             raise HTTPException(status_code=400, detail="API key cannot be empty")
         
-        # Path to .env in root directory (one level up from backend)
+        # Path to .env file in root directory
         env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
         print(f"[SAVE-API-KEY] .env path: {env_path}", file=sys.stdout, flush=True)
         
@@ -412,53 +655,79 @@ async def save_api_key(request: Request):
         key_found = False
         
         if os.path.exists(env_path):
-            print(f"[SAVE-API-KEY] .env file exists, reading...", file=sys.stdout, flush=True)
+            print("[SAVE-API-KEY] Reading existing .env file", file=sys.stdout, flush=True)
             with open(env_path, "r", encoding="utf-8") as f:
                 env_lines = f.readlines()
             
-            # Update existing key or mark for addition
+            # Update existing key
             for i, line in enumerate(env_lines):
                 if line.startswith("GEMINI_API_KEY="):
                     env_lines[i] = f"GEMINI_API_KEY={new_key}\n"
                     key_found = True
-                    print(f"[SAVE-API-KEY] Updated existing key at line {i}", file=sys.stdout, flush=True)
+                    print("[SAVE-API-KEY] Updated existing key", file=sys.stdout, flush=True)
                     break
         else:
-            print(f"[SAVE-API-KEY] .env file doesn't exist, will create new", file=sys.stdout, flush=True)
+            print("[SAVE-API-KEY] Creating new .env file", file=sys.stdout, flush=True)
         
         # Add new key if not found
         if not key_found:
             env_lines.append(f"GEMINI_API_KEY={new_key}\n")
-            print(f"[SAVE-API-KEY] Added new API key", file=sys.stdout, flush=True)
+            print("[SAVE-API-KEY] Added new key", file=sys.stdout, flush=True)
         
-        # Write back to .env
+        # Write to .env file
         with open(env_path, "w", encoding="utf-8") as f:
             f.writelines(env_lines)
-        print(f"[SAVE-API-KEY] Successfully wrote to .env file", file=sys.stdout, flush=True)
         
-        # Reload environment (requires server restart for full effect)
+        print("[SAVE-API-KEY] Successfully saved to .env", file=sys.stdout, flush=True)
+        
+        # Update environment variable (requires restart for full effect)
         os.environ["GEMINI_API_KEY"] = new_key
         
-        print("[SAVE-API-KEY] API key updated successfully", file=sys.stdout, flush=True)
-        return {"success": True, "message": "API key saved. Please restart the server for changes to take full effect."}
-    
+        return {
+            "success": True,
+            "message": (
+                "API key saved successfully. "
+                "Please restart the server for changes to take full effect."
+            )
+        }
+        
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[SAVE-API-KEY] Unexpected error: {str(e)}", file=sys.stdout, flush=True)
-        print(f"[SAVE-API-KEY] Traceback: {traceback.format_exc()}", file=sys.stdout, flush=True)
-        raise HTTPException(status_code=500, detail=f"Error saving API key: {str(e)}")
+        print(f"[ERROR] SAVE-API-KEY: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error saving API key: {str(e)}"
+        )
 
 
-# Mount static files (HTML, CSS, JS) - must be AFTER all API routes
-# Note: In Vercel, static files are served directly by Vercel's CDN, not by the Python app
+# Mount static files for local development only
 if not IS_SERVERLESS:
-    # Only mount static files in local development
-    frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
-    app.mount("/", StaticFiles(directory=frontend_path, html=True), name="static")
+    try:
+        frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+        if os.path.exists(frontend_path):
+            app.mount("/", StaticFiles(directory=frontend_path, html=True), name="static")
+            print(f"✅ Mounted static files from: {frontend_path}", file=sys.stdout, flush=True)
+        else:
+            print(f"⚠️  Frontend directory not found: {frontend_path}", file=sys.stderr, flush=True)
+    except Exception as e:
+        print(f"❌ Error mounting static files: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
 
+
+# Main entry point for local development
 if __name__ == "__main__":
-    port = os.getenv("PORT", 8000)
-    print("Starting server...")
-    uvicorn.run(app, host="0.0.0.0", port=port)
-    print("Server started on http://localhost:" + port)
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    
+    print("="*80, file=sys.stdout, flush=True)
+    print("🚀 Starting Islamic Guidance AI server...", file=sys.stdout, flush=True)
+    print(f"📍 Host: {host}", file=sys.stdout, flush=True)
+    print(f"🔌 Port: {port}", file=sys.stdout, flush=True)
+    print(f"🌐 URL: http://localhost:{port}", file=sys.stdout, flush=True)
+    print("="*80, file=sys.stdout, flush=True)
+    
+    uvicorn.run(app, host=host,port=port, log_level="info")

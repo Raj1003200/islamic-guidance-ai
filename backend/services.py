@@ -1,193 +1,400 @@
-import requests
+"""
+Islamic Guidance AI - External API Services Module
+Handles asynchronous searches for Quran verses and Hadith collections
+"""
+
+import aiohttp
+import asyncio
 import urllib.parse
-import sys
+from typing import List, Dict, Optional
 import time
+import sys
 
-def search_quran(keyword: str):
-    """
-    Search Quran verses using the external API.
-    Returns top 3 matches.
-    """
-    if not keyword:
-        print("[QURAN API] No keyword provided, returning empty results")
-        return []
-        
-    encoded = urllib.parse.quote(keyword)
-    url = f"https://api.alquran.cloud/v1/search/{encoded}/all/en"
-    print(f"[QURAN API] Request URL: {url}")
-    print(f"[QURAN API] Request Method: GET")
-    print(f"[QURAN API] Request Timeout: 10 seconds")
-    
-    try:
-        start_time = time.time()
-        resp = requests.get(url, timeout=10)
-        elapsed_time = time.time() - start_time
-        
-        print(f"[QURAN API] Response Status: {resp.status_code}")
-        print(f"[QURAN API] Response Time: {elapsed_time:.2f} seconds")
-        print(f"[QURAN API] Response Headers: {dict(resp.headers)}")
-        print(f"[QURAN API] Response Size: {len(resp.content)} bytes")
-        
-        if resp.status_code == 200:
-            data = resp.json()
-            total_matches = data.get("data", {}).get("count", 0)
-            print(f"[QURAN API] Total matches found: {total_matches}")
-            print(f"[QURAN API] Response JSON structure: code={data.get('code')}, status={data.get('status')}")
-            
-            if data.get("data") and data["data"].get("matches"):
-                results = [
-                    {
-                        "text": m["text"],
-                        "surah": m["surah"]["englishName"],
-                        "number": m["number"],
-                        "numberInSurah": m["numberInSurah"],
-                        "source": "Quran"
-                    }
-                    for m in data["data"]["matches"][:3]
-                ]
-                print(f"[QURAN API] Returning top {len(results)} results")
-                for idx, result in enumerate(results, 1):
-                    print(f"[QURAN API] Result {idx}: Surah {result['surah']}, Verse {result['numberInSurah']}")
-                    print(f"[QURAN API] Result {idx} Text: {result['text'][:100]}...")
-                return results
-        else:
-            print(f"[QURAN API] API returned status code {resp.status_code}")
-            print(f"[QURAN API] Response Body: {resp.text[:500]}...")
-    except requests.exceptions.Timeout:
-        print(f"[QURAN API] Request timed out after 10 seconds")
-    except requests.exceptions.RequestException as e:
-        print(f"[QURAN API] Request failed: {e}")
-    except Exception as e:
-        print(f"[QURAN API] Error searching Quran: {e}")
-    
-    print("[QURAN API] No results found, returning empty list")
-    return []
+# API Configuration Constants
+QURAN_API_BASE = "https://api.alquran.cloud/v1"
+HADITH_API_BASES = [
+    "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions",
+    "https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions"
+]
 
-def search_hadith(topic: str, collections: list = None):
+# Timeout and retry configuration optimized for Vercel
+REQUEST_TIMEOUT = 8  # Reduced from 10s to fit within Vercel limits
+MAX_RETRIES = 2      # Reduced from 3 to minimize latency
+MAX_CONCURRENT_REQUESTS = 3  # Limit concurrent API calls
+
+
+class APIException(Exception):
     """
-    Search Hadiths for a topic across specified or all major collections.
-    Returns a list of matching hadiths from all collections.
+    Custom exception for API-related errors with status code tracking
+    """
+    def __init__(self, message: str, status_code: Optional[int] = None):
+        self.message = message
+        self.status_code = status_code
+        super().__init__(self.message)
+
+
+async def search_quran_async(keyword: str, max_results: int = 3) -> List[Dict]:
+    """
+    Search Quran verses using external API asynchronously.
     
     Args:
-        topic: The topic to search for
-        collections: List of collection codes (e.g., ['eng-bukhari', 'eng-muslim'])
-                    If None, searches all major collections
+        keyword: Search term for Quran verses
+        max_results: Maximum number of results to return (default: 3)
+        
+    Returns:
+        List of dictionaries containing verse data with:
+        - text: Verse text in English
+        - surah: Surah name
+        - number: Verse number in Quran
+        - numberInSurah: Verse number within surah
+        - source: Always "Quran"
+        
+    Raises:
+        APIException: If API request fails or times out
+        
+    Example:
+        results = await search_quran_async("patience", max_results=5)
     """
-    if not topic:
-        print("[HADITH API] No topic provided, returning empty list")
+    if not keyword:
+        print("[QURAN API] No keyword provided, returning empty results", file=sys.stdout, flush=True)
         return []
-    
-    # Default to all major collections if none specified
-    if not collections:
-        collections = ["eng-bukhari", "eng-muslim", "eng-abudawud", "eng-tirmidhi", "eng-nasai", "eng-ibnmajah"]
-    
-    # Remove 'eng-' prefix if present for logging
-    collection_names = [c.replace('eng-', '') for c in collections]
-    
-    all_matches = []
-    
-    print(f"[HADITH SEARCH] Starting search for topic: '{topic}' across {len(collections)} collections")
-    print(f"[HADITH SEARCH] Collections: {', '.join(collection_names)}")
-    print("="*80)
-    
-    for collection_code in collections:
-        # Extract book name (remove 'eng-' prefix if present)
-        book = collection_code.replace('eng-', '') if collection_code.startswith('eng-') else collection_code
-        print(f"[HADITH API] Searching in collection: '{book}'")
         
-        base = "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions"
-        urls = [
-            f"{base}/eng-{book}.min.json",
-            f"{base}/eng-{book}.json",
-            f"https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions/eng-{book}.min.json",
-        ]
+    try:
+        encoded = urllib.parse.quote(keyword)
+        url = f"{QURAN_API_BASE}/search/{encoded}/all/en"
         
-        hadiths = None
-        for idx, u in enumerate(urls, 1):
-            try:
-                print(f"[HADITH API] Attempt {idx}/{len(urls)} - Request URL: {u}")
-                print(f"[HADITH API] Request Method: GET")
-                print(f"[HADITH API] Request Timeout: 10 seconds")
-                
-                start_time = time.time()
-                r = requests.get(u, timeout=10)
+        print(f"[QURAN API] Request URL: {url}", file=sys.stdout, flush=True)
+        print("[QURAN API] Method: GET (Async)", file=sys.stdout, flush=True)
+        print(f"[QURAN API] Timeout: {REQUEST_TIMEOUT}s", file=sys.stdout, flush=True)
+        
+        start_time = time.time()
+        
+        # Configure timeout for this specific request
+        timeout = aiohttp.ClientTimeout(total=REQUEST_TIMEOUT)
+        
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url) as resp:
                 elapsed_time = time.time() - start_time
                 
-                print(f"[HADITH API] Response Status: {r.status_code}")
-                print(f"[HADITH API] Response Time: {elapsed_time:.2f} seconds")
-                print(f"[HADITH API] Response Headers: {dict(r.headers)}")
-                print(f"[HADITH API] Response Size: {len(r.content)} bytes")
+                print(f"[QURAN API] Response Status: {resp.status}", file=sys.stdout, flush=True)
+                print(f"[QURAN API] Response Time: {elapsed_time:.2f}s", file=sys.stdout, flush=True)
+                print(f"[QURAN API] Response Size: {resp.content_length} bytes", file=sys.stdout, flush=True)
                 
-                if r.status_code == 200:
-                    json_data = r.json()
-                    print(f"[HADITH API] Response JSON keys: {list(json_data.keys())}")
+                if resp.status == 200:
+                    data = await resp.json()
+                    total_matches = data.get("data", {}).get("count", 0)
+                    print(f"[QURAN API] Total matches found: {total_matches}", file=sys.stdout, flush=True)
+                    
+                    # Extract and format results
+                    if data.get("data") and data["data"].get("matches"):
+                        results = [
+                            {
+                                "text": match["text"],
+                                "surah": match["surah"]["englishName"],
+                                "number": match["number"],
+                                "numberInSurah": match["numberInSurah"],
+                                "source": "Quran"
+                            }
+                            for match in data["data"]["matches"][:max_results]
+                        ]
+                        
+                        print(f"[QURAN API] Returning {len(results)} results", file=sys.stdout, flush=True)
+                        
+                        # Log each result for debugging
+                        for idx, result in enumerate(results, 1):
+                            print(f"[QURAN API] Result {idx}: Surah {result['surah']}, Verse {result['numberInSurah']}", file=sys.stdout, flush=True)
+                            print(f"[QURAN API] Text preview: {result['text'][:100]}...", file=sys.stdout, flush=True)
+                        
+                        return results
+                    else:
+                        print("[QURAN API] No matches found in response", file=sys.stdout, flush=True)
+                        return []
+                        
+                else:
+                    # Handle non-200 responses
+                    error_text = await resp.text()
+                    print(f"[QURAN API] API returned status {resp.status}", file=sys.stderr, flush=True)
+                    print(f"[QURAN API] Error body: {error_text[:500]}", file=sys.stderr, flush=True)
+                    raise APIException(
+                        f"Quran API returned status {resp.status}",
+                        status_code=resp.status
+                    )
+                    
+    except asyncio.TimeoutError:
+        print(f"[QURAN API] Request timed out after {REQUEST_TIMEOUT}s", file=sys.stderr, flush=True)
+        raise APIException("Quran API request timed out")
+        
+    except aiohttp.ClientError as e:
+        print(f"[QURAN API] Client error: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
+        raise APIException(f"Quran API client error: {str(e)}")
+        
+    except Exception as e:
+        print(f"[QURAN API] Unexpected error: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
+        raise APIException(f"Quran API error: {str(e)}")
+
+
+async def fetch_hadith_collection(
+    session: aiohttp.ClientSession,
+    collection_code: str
+) -> Optional[List[Dict]]:
+    """
+    Fetch a single Hadith collection with retry logic across multiple CDNs.
+    
+    Args:
+        session: Active aiohttp ClientSession for connection pooling
+        collection_code: Collection identifier (e.g., 'eng-bukhari')
+        
+    Returns:
+        List of hadith dictionaries or None if all attempts fail
+        
+    Note:
+        Tries multiple CDN sources with fallback logic for reliability
+    """
+    book = collection_code.replace('eng-', '') if collection_code.startswith('eng-') else collection_code
+    print(f"[HADITH API] Fetching collection: '{book}'", file=sys.stdout, flush=True)
+    
+    # Generate URLs to try with priority order
+    urls = []
+    for base in HADITH_API_BASES:
+        urls.append(f"{base}/eng-{book}.min.json")  # Try minified first (smaller)
+        urls.append(f"{base}/eng-{book}.json")       # Then full version
+    
+    # Try each URL with retry logic
+    for idx, url in enumerate(urls[:MAX_RETRIES], 1):
+        try:
+            print(f"[HADITH API] Attempt {idx}/{MAX_RETRIES} - URL: {url}", file=sys.stdout, flush=True)
+            start_time = time.time()
+            
+            async with session.get(url) as resp:
+                elapsed_time = time.time() - start_time
+                
+                print(f"[HADITH API] Status: {resp.status}", file=sys.stdout, flush=True)
+                print(f"[HADITH API] Time: {elapsed_time:.2f}s", file=sys.stdout, flush=True)
+                print(f"[HADITH API] Size: {resp.content_length} bytes", file=sys.stdout, flush=True)
+                
+                if resp.status == 200:
+                    json_data = await resp.json()
                     
                     if json_data.get("hadiths"):
                         hadiths = json_data["hadiths"]
-                        print(f"[HADITH API] Successfully loaded {len(hadiths)} hadiths from '{book}' collection")
+                        print(f"[HADITH API] Successfully loaded {len(hadiths)} hadiths from '{book}'", file=sys.stdout, flush=True)
+                        
+                        # Log metadata if available
                         metadata = json_data.get('metadata', {})
                         if metadata:
-                            print(f"[HADITH API] Metadata - Name: {metadata.get('name', 'N/A')}, Sections: {len(metadata.get('sections', {}))}")
-                        break
+                            print(f"[HADITH API] Metadata - Name: {metadata.get('name', 'N/A')}, Sections: {len(metadata.get('sections', {}))}", file=sys.stdout, flush=True)
+                        
+                        return hadiths
                     else:
-                        print(f"[HADITH API] No 'hadiths' key in response from URL {idx}")
+                        print("[HADITH API] No 'hadiths' key in response", file=sys.stderr, flush=True)
                 else:
-                    print(f"[HADITH API] Status {r.status_code} from URL {idx}")
-                    print(f"[HADITH API] Response Body: {r.text[:200]}...")
-            except requests.exceptions.Timeout:
-                print(f"[HADITH API] Request timed out for URL {idx}")
-                continue
-            except requests.exceptions.RequestException as e:
-                print(f"[HADITH API] Request failed for URL {idx}: {e}")
-                continue
-            except Exception as e:
-                print(f"[HADITH API] Failed to load from URL {idx}: {e}")
-                continue
-                
-        if not hadiths:
-            print(f"[HADITH API] Could not load hadith collection '{book}' from any URL")
+                    print(f"[HADITH API] Status {resp.status} from URL {idx}", file=sys.stderr, flush=True)
+                    
+        except asyncio.TimeoutError:
+            print(f"[HADITH API] Timeout for URL {idx}", file=sys.stderr, flush=True)
             continue
             
-        topic_lower = topic.lower()
-        print(f"[HADITH API] Searching for '{topic}' in {len(hadiths)} hadiths from '{book}'...")
+        except aiohttp.ClientError as e:
+            print(f"[HADITH API] Client error for URL {idx}: {e}", file=sys.stderr, flush=True)
+            continue
+            
+        except Exception as e:
+            print(f"[HADITH API] Failed URL {idx}: {e}", file=sys.stderr, flush=True)
+            continue
+    
+    # All attempts failed
+    print(f"[HADITH API] Could not load collection '{book}' from any URL", file=sys.stderr, flush=True)
+    return None
+
+
+async def search_hadith_async(
+    topic: str,
+    collections: Optional[List[str]] = None,
+    max_per_collection: int = 2
+) -> List[Dict]:
+    """
+    Search Hadiths asynchronously across multiple collections.
+    
+    Args:
+        topic: Search term to find in hadith texts
+        collections: List of collection codes to search (defaults to Kutub al-Sittah)
+        max_per_collection: Maximum results to return per collection (default: 2)
         
-        # Search for topic in hadith text
-        matches = [h for h in hadiths if topic_lower in h.get("text", "").lower()]
+    Returns:
+        List of dictionaries containing hadith data with:
+        - text: Hadith text in English
+        - hadithnumber: Hadith number within collection
+        - arabicnumber: Arabic numbering system number
+        - book: Collection name (e.g., 'bukhari')
+        - reference: Reference metadata
+        - source: Formatted source string
+        - citation_url: Direct link to Sunnah.com
         
-        if matches:
-            print(f"[HADITH API] Found {len(matches)} matches in '{book}'")
-            # Take top 2 matches from each collection to avoid overwhelming results
-            for match in matches[:2]:
-                hadith_number = match.get("hadithnumber", "")
-                # Create proper citation URL
-                citation_url = f"https://sunnah.com/{book}:{hadith_number}"
+    Raises:
+        APIException: If critical search failure occurs
+        
+    Example:
+        results = await search_hadith_async(
+            "prayer",
+            collections=["eng-bukhari", "eng-muslim"],
+            max_per_collection=3
+        )
+    """
+    if not topic:
+        print("[HADITH API] No topic provided, returning empty list", file=sys.stderr, flush=True)
+        return []
+    
+    # Default to Kutub al-Sittah (The Six Authentic Books)
+    if not collections:
+        collections = [
+            "eng-bukhari",   # Sahih al-Bukhari
+            "eng-muslim",    # Sahih Muslim
+            "eng-abudawud",  # Sunan Abu Dawud
+            "eng-tirmidhi",  # Jami' at-Tirmidhi
+            "eng-nasai",     # Sunan an-Nasa'i
+            "eng-ibnmajah"   # Sunan Ibn Majah
+        ]
+    
+    collection_names = [c.replace('eng-', '') for c in collections]
+    print(f"[HADITH SEARCH] Starting async search for '{topic}' across {len(collections)} collections", file=sys.stdout, flush=True)
+    print(f"[HADITH SEARCH] Collections: {', '.join(collection_names)}", file=sys.stdout, flush=True)
+    print("="*80, file=sys.stdout, flush=True)
+    
+    all_matches = []
+    topic_lower = topic.lower()
+    
+    try:
+        # Configure session timeout
+        timeout = aiohttp.ClientTimeout(total=REQUEST_TIMEOUT)
+        
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            # Fetch all collections concurrently for efficiency
+            print("[HADITH SEARCH] Fetching collections concurrently...", file=sys.stdout, flush=True)
+            
+            tasks = [
+                fetch_hadith_collection(session, collection_code)
+                for collection_code in collections
+            ]
+            
+            # Wait for all collections to load (with exception handling)
+            collections_data = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Process each collection's results
+            for collection_code, hadiths in zip(collections, collections_data):
+                book = collection_code.replace('eng-', '')
                 
-                hadith_data = {
-                    "text": match.get("text", ""),
-                    "hadithnumber": hadith_number,
-                    "arabicnumber": match.get("arabicnumber", ""),
-                    "book": book,
-                    "reference": match.get("reference", {}),
-                    "source": f"Hadith ({book.capitalize()})",
-                    "citation_url": citation_url
-                }
-                all_matches.append(hadith_data)
+                # Handle exceptions from individual collection fetches
+                if isinstance(hadiths, Exception):
+                    print(f"[HADITH SEARCH] Error loading '{book}': {hadiths}", file=sys.stderr, flush=True)
+                    continue
+                    
+                if not hadiths:
+                    print(f"[HADITH SEARCH] No hadiths loaded for '{book}'", file=sys.stderr, flush=True)
+                    continue
                 
-                # Log each match details
-                print(f"  [MATCH] Collection: {book}, Hadith #: {hadith_number}")
-                print(f"  [MATCH] URL: {citation_url}")
-                print(f"  [MATCH] Text Preview: {match.get('text', '')[:150]}...")
-        else:
-            print(f"[HADITH API] No matches found in '{book}'")
+                # Search for topic in hadith texts (case-insensitive)
+                print(f"[HADITH SEARCH] Searching {len(hadiths)} hadiths in '{book}'...", file=sys.stdout, flush=True)
+                
+                matches = [
+                    hadith for hadith in hadiths
+                    if topic_lower in hadith.get("text", "").lower()
+                ]
+                
+                if matches:
+                    print(f"[HADITH SEARCH] Found {len(matches)} matches in '{book}'", file=sys.stdout, flush=True)
+                    
+                    # Take top N matches from this collection
+                    for match in matches[:max_per_collection]:
+                        hadith_number = match.get("hadithnumber", "")
+                        citation_url = f"https://sunnah.com/{book}:{hadith_number}"
+                        
+                        hadith_data = {
+                            "text": match.get("text", ""),
+                            "hadithnumber": hadith_number,
+                            "arabicnumber": match.get("arabicnumber", ""),
+                            "book": book,
+                            "reference": match.get("reference", {}),
+                            "source": f"Hadith ({book.capitalize()})",
+                            "citation_url": citation_url
+                        }
+                        all_matches.append(hadith_data)
+                        
+                        # Log match details
+                        print(f"  [MATCH] {book.capitalize()}: #{hadith_number} - {citation_url}", file=sys.stdout, flush=True)
+                        print(f"  [MATCH] Text preview: {match.get('text', '')[:150]}...", file=sys.stdout, flush=True)
+                else:
+                    print(f"[HADITH SEARCH] No matches in '{book}'", file=sys.stdout, flush=True)
+        
+        print("="*80, file=sys.stdout, flush=True)
+        print(f"[HADITH SEARCH] Completed: {len(all_matches)} total matches across all collections", file=sys.stdout, flush=True)
+        
+        return all_matches
+        
+    except Exception as e:
+        print(f"[HADITH SEARCH] Critical error: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
+        # Don't crash - return empty results on error
+        return []
+
+
+# Synchronous wrappers for backward compatibility with existing code
+def search_quran(keyword: str, max_results: int = 3) -> List[Dict]:
+    """
+    Synchronous wrapper for search_quran_async.
     
-    print("="*80)
-    print(f"[HADITH SEARCH] Total matches found across all collections: {len(all_matches)}")
+    Note: This creates a new event loop if needed. Prefer using
+    the async version directly in async contexts.
+    """
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     
-    if all_matches:
-        print(f"[HADITH SEARCH] Returning {len(all_matches)} Hadith results")
-        for idx, h in enumerate(all_matches, 1):
-            print(f"  [{idx}] {h['book'].capitalize()}: {h['hadithnumber']} - {h['citation_url']}")
-    else:
-        print("[HADITH SEARCH] No matching hadiths found in any collection")
+    return loop.run_until_complete(
+        search_quran_async(keyword, max_results)
+    )
+
+
+def search_hadith(
+    topic: str,
+    collections: Optional[List[str]] = None,
+    max_per_collection: int = 2
+) -> List[Dict]:
+    """
+    Synchronous wrapper for search_hadith_async.
     
-    return all_matches
+    Note: This creates a new event loop if needed. Prefer using
+    the async version directly in async contexts.
+    """
+    try:
+        # Check if we're in an async context
+        try:
+            asyncio.get_running_loop()
+            # If we get here, we're in an async context
+            print("[HADITH SEARCH] Using sync wrapper in async context. Consider using search_hadith_async directly.", 
+                  file=sys.stderr, flush=True)
+            
+            # Create a new event loop for the thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            return loop.run_until_complete(
+                search_hadith_async(topic, collections, max_per_collection)
+            )
+            
+        except RuntimeError:
+            # No running event loop, we can use asyncio.run()
+            return asyncio.run(
+                search_hadith_async(topic, collections, max_per_collection)
+            )
+            
+    except Exception as e:
+        print(f"[HADITH SEARCH] Error in sync wrapper: {e}", file=sys.stderr, flush=True)
+        import traceback
+        traceback.print_exc()
+        return []

@@ -11,12 +11,12 @@ google-generativeai>=0.3.0
 # Environment Variables
 python-dotenv>=1.0.0
 
-# HTTP Requests for external APIs
-requests>=2.31.0
+# Async HTTP Client - CRITICAL FIX for Vercel
+aiohttp>=3.9.0
 
 # Data Validation
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
 
-# CORS Support (already included in FastAPI but explicit for clarity)
+# CORS Support
 python-multipart>=0.0.6
