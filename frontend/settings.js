@@ -275,3 +275,57 @@ if (toggleVisibilityBtn) {
     }
   });
 }
+
+// =============================================================================
+// CACHE MANAGEMENT
+// =============================================================================
+
+const clearCacheBtn = document.getElementById('clearCacheBtn');
+
+if (clearCacheBtn) {
+  clearCacheBtn.addEventListener('click', async () => {
+    // Show confirmation dialog
+    const confirmed = confirm(
+      'Clear Cache\n\n' +
+      'This will clear all cached data including:\n' +
+      'Quran search results\n' +
+      'Hadith collections\n' +
+      'Guidance responses\n' +
+      'Keywords\n' +
+      'Rate limits\n\n' +
+      'Are you sure you want to proceed?'
+    );
+    
+    if (!confirmed) {
+      return;
+    }
+    
+    // Disable button and show loading state
+    clearCacheBtn.disabled = true;
+    const originalText = clearCacheBtn.textContent;
+    clearCacheBtn.textContent = 'Clearing...';
+    
+    try {
+      const response = await fetch('/api/admin/clear-cache', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        showStatus(`Cache cleared successfully!\n`);
+        console.log('[CACHE] Cleared patterns:', data.patterns);
+      } else {
+        const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        showStatus(`Failed to clear cache: ${error.detail}`, true);
+      }
+    } catch (err) {
+      showStatus(`Error clearing cache: ${err.message}`, true);
+      console.error('[CACHE] Clear error:', err);
+    } finally {
+      // Re-enable button
+      clearCacheBtn.disabled = false;
+      clearCacheBtn.textContent = originalText;
+    }
+  });
+}

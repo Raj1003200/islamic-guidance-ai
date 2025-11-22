@@ -528,6 +528,40 @@ async def lifespan(app: FastAPI):
     
     print("[STARTUP] Application ready", file=sys.stdout, flush=True)
     
+    # Automatic Startup Tests (Runs in background after server starts)
+    async def run_startup_tests():
+        """Runs endpoint tests after a short delay to allow server startup"""
+        try:
+            # Wait for server to be fully responsive
+            await asyncio.sleep(5) 
+            
+            print("\n[STARTUP] Running automatic endpoint health checks...", file=sys.stdout, flush=True)
+            
+            # Determine Base URL
+            port = int(os.getenv("PORT", 8000))
+            if IS_SERVERLESS:
+                base_url = "https://islamic-guidance-ai.vercel.app"
+            else:
+                base_url = f"http://localhost:{port}"
+            
+            # Import and run tests in a separate thread to not block event loop
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.dirname(current_dir)
+            if project_root not in sys.path:
+                sys.path.insert(0, project_root)
+                
+            from tests.backend.test_endpoints import run_health_checks
+            
+            # Run synchronous tests in thread pool
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, lambda: run_health_checks(base_url))
+            
+        except Exception as e:
+            print(f"[STARTUP] Error running automatic tests: {e}", file=sys.stderr, flush=True)
+
+    # Schedule the test task
+    asyncio.create_task(run_startup_tests())
+    
     yield  # App runs here
     
     # ========== SHUTDOWN ==========
@@ -1358,6 +1392,55 @@ async def clear_cache_endpoint(pattern: Optional[str] = None):
         raise HTTPException(
             status_code=500,
             detail=f"Error clearing cache: {str(e)[:100]}"
+        )
+
+@app.get("/api/admin/run-tests")
+async def run_endpoint_tests():
+    """
+    Run endpoint health checks (admin endpoint)
+    
+    This endpoint triggers the test suite and returns results.
+    Should be called AFTER the server is fully started.
+    """
+    try:
+        # Import the test function
+        try:
+            from tests.backend.test_endpoints import run_health_checks
+        except ImportError:
+            raise HTTPException(
+                status_code=500,
+                detail="Test module not found. Ensure tests/backend/test_endpoints.py exists."
+            )
+        
+        # Determine base URL
+        port = int(os.getenv("PORT", 8000))
+        if IS_SERVERLESS:
+            base_url = "https://islamic-guidance-ai.vercel.app"
+        else:
+            base_url = f"http://localhost:{port}"
+        
+        # Run tests (this will print to console)
+        print(f"\n[ADMIN] Running endpoint tests against {base_url}...", file=sys.stdout, flush=True)
+        
+        # Note: run_health_checks prints to console and returns exit code
+        # We can't easily capture the output, so we just trigger it
+        exit_code = run_health_checks(base_url)
+        
+        return {
+            "success": exit_code == 0,
+            "message": "Tests completed. Check server logs for detailed results.",
+            "base_url": base_url,
+            "exit_code": exit_code
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[RUN-TESTS] Error: {e}", file=sys.stderr, flush=True)
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error running tests: {str(e)[:100]}"
         )
 
 # =============================================================================
