@@ -1,4 +1,4 @@
-# MuslimGuideAI Backend Requirements
+# IslamicGuideAI Backend Requirements
 # Python dependencies for FastAPI backend and Vercel deployment
 
 # Web Framework

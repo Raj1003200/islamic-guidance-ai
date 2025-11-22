@@ -1,5 +1,5 @@
 """
-Vercel Serverless Function Entry Point for MuslimGuideAI Backend
+Vercel Serverless Function Entry Point for IslamicGuideAI Backend
 This file adapts the FastAPI application to work with Vercel's serverless infrastructure.
 """
 

@@ -1,14 +1,3 @@
-# Vercel Deployment Guide for MuslimGuideAI
-
-This guide walks you through deploying the MuslimGuideAI application to Vercel with both the Python FastAPI backend and static frontend.
-
-## Prerequisites
-
-1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
-2. **GitHub Repository**: Push your code to GitHub
-3. **Gemini API Key**: Obtain from [Google AI Studio](https://makersuite.google.com/app/apikey)
-
-## Deployment Steps
 
 ### 1. Connect to Vercel
 
@@ -49,7 +38,7 @@ After deployment, test your application:
 ## Project Structure
 
 ```
-MuslimGuideAI/
+IslamicGuideAI/
 ├── api/
 │   └── index.py              # Vercel serverless function entry point
 ├── backend/

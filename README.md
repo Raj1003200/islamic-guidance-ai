@@ -1,11 +1,3 @@
-# MuslimGuideAI 🕌
-
-An Islamic guidance application powered by Google's Gemini AI that provides compassionate, contextual Islamic advice based on Quran and Hadith.
-
-**Created by:** Haseeb Mir  
-**Email:** haseebmir.hm@gmail.com  
-**License:** MIT
-
 ## 🚀 Quick Start
 
 ### Local Development

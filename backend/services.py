@@ -2,7 +2,7 @@ import requests
 import urllib.parse
 import logging
 
-logger = logging.getLogger("MuslimGuideAI")
+logger = logging.getLogger("IslamicGuideAI")
 
 def search_quran(keyword: str):
     """

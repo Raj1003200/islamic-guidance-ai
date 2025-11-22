@@ -76,9 +76,14 @@ window.addEventListener('DOMContentLoaded', async () => {
   try {
     const response = await fetch('/api/get-api-key');
     if (response.ok) {
-      const data = await response.json();
-      if (data.apiKey) {
-        apiKeyInput.value = data.apiKey;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const data = await response.json();
+        if (data.apiKey) {
+          apiKeyInput.value = data.apiKey;
+        }
+      } else {
+        console.error('Server returned non-JSON response for get-api-key');
       }
     }
   } catch (err) {
@@ -112,8 +117,15 @@ saveBtn.addEventListener('click', async () => {
     if (response.ok) {
       showStatus('API key saved successfully! Please restart the server.');
     } else {
-      const error = await response.json();
-      showStatus(`Failed to save API key: ${error.detail}`, true);
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const error = await response.json();
+        showStatus(`Failed to save API key: ${error.detail}`, true);
+      } else {
+        const text = await response.text();
+        showStatus(`Failed to save API key: Server returned ${response.status} ${response.statusText}`, true);
+        console.error("Server error:", text);
+      }
     }
   } catch (err) {
     showStatus(`Network error: ${err.message}`, true);

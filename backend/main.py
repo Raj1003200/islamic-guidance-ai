@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 import uvicorn
 import logging
 from logging.handlers import RotatingFileHandler
@@ -42,7 +43,8 @@ else:
         ]
     )
 
-logger = logging.getLogger("MuslimGuideAI")
+logger = logging.getLogger("IslamicGuideAI")
+logger.info("Loading IslamicGuideAI Backend Module...")
 
 # Helper function to truncate long JSON for logging
 def truncate_json_for_log(data, max_text_length=200):
@@ -371,39 +373,82 @@ async def hadith_search_endpoint(topic: str, book: str = "bukhari"):
     return search_hadith(topic, book)
 
 
+
 @app.get("/api/get-api-key")
 async def get_api_key():
     """
     Return the Gemini API key from environment for settings page.
+    In serverless/production, this returns a masked version for security.
     """
-    return {"apiKey": API_KEY or ""}
+    try:
+        logger.info("[GET-API-KEY] Endpoint called")
+        logger.info(f"[GET-API-KEY] IS_SERVERLESS: {IS_SERVERLESS}")
+        logger.info(f"[GET-API-KEY] API_KEY exists: {bool(API_KEY)}")
+        
+        if IS_SERVERLESS:
+            # In production, return masked key for security
+            if API_KEY:
+                masked_key = API_KEY[:8] + "..." + API_KEY[-4:] if len(API_KEY) > 12 else "***"
+                logger.info(f"[GET-API-KEY] Returning masked key in serverless mode")
+                return {"apiKey": masked_key, "isProduction": True}
+            else:
+                logger.warning("[GET-API-KEY] No API key found in serverless environment")
+                return {"apiKey": "", "isProduction": True}
+        else:
+            # In development, return full key
+            logger.info(f"[GET-API-KEY] Returning full key in development mode")
+            return {"apiKey": API_KEY or "", "isProduction": False}
+    except Exception as e:
+        logger.error(f"[GET-API-KEY] Error: {str(e)}")
+        logger.error(f"[GET-API-KEY] Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving API key: {str(e)}"
+        )
 
 @app.post("/api/save-api-key")
-async def save_api_key(request: dict):
+async def save_api_key(request: Request):
     """
     Save API key to .env file (development only).
     Note: This endpoint is disabled in serverless/production environments.
     """
-    # Disable in serverless environment
-    if IS_SERVERLESS:
-        raise HTTPException(
-            status_code=403, 
-            detail="API key saving is disabled in production. Please set GEMINI_API_KEY environment variable in Vercel dashboard."
-        )
-    
     try:
-        new_key = request.get("apiKey", "").strip()
+        logger.info("[SAVE-API-KEY] Endpoint called")
+        logger.info(f"[SAVE-API-KEY] IS_SERVERLESS: {IS_SERVERLESS}")
+        
+        # Disable in serverless environment
+        if IS_SERVERLESS:
+            logger.warning("[SAVE-API-KEY] Attempted to save API key in serverless environment")
+            raise HTTPException(
+                status_code=403,
+                detail="API key saving is disabled in production. Please set GEMINI_API_KEY environment variable in Vercel dashboard."
+            )
+        
+        # Parse request body
+        try:
+            body = await request.json()
+            logger.info(f"[SAVE-API-KEY] Request body parsed successfully")
+        except Exception as e:
+            logger.error(f"[SAVE-API-KEY] Failed to parse request body: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid JSON in request body")
+        
+        new_key = body.get("apiKey", "").strip()
+        logger.info(f"[SAVE-API-KEY] API key length: {len(new_key) if new_key else 0}")
+        
         if not new_key:
+            logger.warning("[SAVE-API-KEY] Empty API key provided")
             raise HTTPException(status_code=400, detail="API key cannot be empty")
         
         # Path to .env in root directory (one level up from backend)
         env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+        logger.info(f"[SAVE-API-KEY] .env path: {env_path}")
         
         # Read existing .env content
         env_lines = []
         key_found = False
         
         if os.path.exists(env_path):
+            logger.info(f"[SAVE-API-KEY] .env file exists, reading...")
             with open(env_path, "r", encoding="utf-8") as f:
                 env_lines = f.readlines()
             
@@ -412,27 +457,34 @@ async def save_api_key(request: dict):
                 if line.startswith("GEMINI_API_KEY="):
                     env_lines[i] = f"GEMINI_API_KEY={new_key}\n"
                     key_found = True
+                    logger.info(f"[SAVE-API-KEY] Updated existing key at line {i}")
                     break
+        else:
+            logger.info(f"[SAVE-API-KEY] .env file doesn't exist, will create new")
         
         # Add new key if not found
         if not key_found:
             env_lines.append(f"GEMINI_API_KEY={new_key}\n")
+            logger.info(f"[SAVE-API-KEY] Added new API key")
         
         # Write back to .env
         with open(env_path, "w", encoding="utf-8") as f:
             f.writelines(env_lines)
+        logger.info(f"[SAVE-API-KEY] Successfully wrote to .env file")
         
         # Reload environment (requires server restart for full effect)
         os.environ["GEMINI_API_KEY"] = new_key
         
-        logger.info("API key updated successfully")
+        logger.info("[SAVE-API-KEY] API key updated successfully")
         return {"success": True, "message": "API key saved. Please restart the server for changes to take full effect."}
     
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error saving API key: {e}")
+        logger.error(f"[SAVE-API-KEY] Unexpected error: {str(e)}")
+        logger.error(f"[SAVE-API-KEY] Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error saving API key: {str(e)}")
+
 
 # Mount static files (HTML, CSS, JS) - must be AFTER all API routes
 # Note: In Vercel, static files are served directly by Vercel's CDN, not by the Python app
