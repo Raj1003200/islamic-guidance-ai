@@ -219,6 +219,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 MIT License
 Copyright (c) 2025 Haseeb Mir
 
+## Version
+See `CHANGELOG.md` for version history.
+Current version: 2.1.0
+
 ## 🙏 Acknowledgments
 
 - Google Gemini AI for providing the AI capabilities

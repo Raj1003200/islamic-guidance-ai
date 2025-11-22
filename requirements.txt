@@ -25,3 +25,4 @@ python-multipart>=0.0.6
 # Caching & Rate Limiting
 redis>=5.0.0
 slowapi>=0.1.9
+yake>=0.6.0
