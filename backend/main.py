@@ -65,19 +65,26 @@ def truncate_json_for_log(data, max_text_length=200):
 
 # Configure Gemini
 API_KEY = os.getenv("GEMINI_API_KEY")
-if not API_KEY:
-    logger.warning("GEMINI_API_KEY not found in .env")
+model = None
 
-genai.configure(api_key=API_KEY)
 try:
-    # Use gemini-2.0-flash as verified
-    model = genai.GenerativeModel('gemini-2.0-flash')
-    logger.info("Successfully configured Gemini 2.0 Flash model")
+    if not API_KEY:
+        logger.warning("GEMINI_API_KEY not found in .env")
+    else:
+        genai.configure(api_key=API_KEY)
+        # Use gemini-2.0-flash as verified
+        model = genai.GenerativeModel('gemini-2.0-flash')
+        logger.info("Successfully configured Gemini 2.0 Flash model")
 except Exception as e:
     logger.error(f"Error configuring model: {e}")
-    model = None
+    # Don't crash, just leave model as None
 
 app = FastAPI()
+
+@app.get("/")
+async def root():
+    """Health check endpoint"""
+    return {"status": "ok", "service": "IslamicGuideAI", "version": "1.0.0"}
 
 # CORS configuration
 app.add_middleware(
