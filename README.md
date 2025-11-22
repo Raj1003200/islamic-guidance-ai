@@ -93,9 +93,8 @@ MuslimGuideAI/
 
 ## 🎨 UI/UX App Preview
 
-### 🏠 Main Page
+### 🏠 Main Page - Traditional Islamic Theme
 
-#### Traditional Islamic Theme (Default)
 ![Main Page - Traditional Islamic Theme](screenshots/main_traditional.png)
 
 **Features Highlighted:**
@@ -109,51 +108,36 @@ MuslimGuideAI/
 
 ---
 
-### ⚙️ Settings Page
+### ⚙️ Settings Page - Traditional Islamic Theme
 
-#### Theme Selector & Configuration
 ![Settings Page - Traditional Islamic Theme](screenshots/settings_traditional.png)
 
 **Settings Features:**
-- 🎨 **Theme Dropdown** - Select from 3 beautiful themes
+- 🎨 **Theme Dropdown** - Select from 3 beautiful themes (Traditional Islamic, Modern Blue, Minimal White)
 - 🔑 **API Key Management** - Securely configure Gemini API key
 - 👁️ **Password Toggle** - Show/hide API key visibility
 - 💾 **Save Button** - Apply and persist settings
 - 🌙 **Dark Mode Toggle** - Consistent across all pages
 - ⬅️ **Back to Home** - Easy navigation
 
-**Available Themes:**
-1. **Traditional Islamic** (Default) - Beige/brown with serif fonts
-2. **Modern Blue** - Contemporary blue gradients
-3. **Minimal White** - Clean minimalist design
+---
+
+### 🔍 Query Results - Traditional Islamic Theme
+
+![Query Results - Traditional Islamic Theme](screenshots/query_results_traditional.png)
+
+**Query Results Features:**
+- 📖 **Comprehensive Guidance** - AI-powered Islamic advice based on Quran and Hadith
+- 🔗 **Direct Citations** - Clickable links to source texts
+- 📚 **Source References** - Detailed references to Quran verses and Hadith collections
+- ✨ **Clear Formatting** - Easy-to-read guidance with proper formatting
+- 🕌 **Traditional Aesthetics** - Consistent with the Traditional Islamic theme
 
 ---
 
-### 🌈 Theme Variations
+### 🌙 Dark Mode - Traditional Islamic Theme
 
-#### Modern Blue Theme
-![Settings Page - Modern Blue Theme](screenshots/settings_modern.png)
-
-**Modern Blue Characteristics:**
-- 💙 Vibrant blue gradients
-- ✨ Glassmorphism design with frosted glass effect
-- 🔷 Clean, contemporary aesthetics
-- 📱 Modern sans-serif typography
-
-#### Minimal White Theme
-![Settings Page - Minimal White Theme](screenshots/settings_page.png)
-
-**Minimal White Characteristics:**
-- ⚪ Ultra-clean gray/white palette
-- 🎯 Minimalist Scandinavian design
-- 📏 Simple geometric elements
-- 💨 Lightweight and fast
-
----
-
-### 🌙 Dark Mode
-
-![Dark Mode](screenshots/dark_mode.png)
+![Dark Mode - Traditional Islamic Theme](screenshots/dark_mode.png)
 
 **Dark Mode Features:**
 - 🌑 **One-Click Toggle** - Instant theme switching
@@ -195,6 +179,7 @@ MuslimGuideAI/
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `GEMINI_API_KEY` | Google Gemini API key | Yes |
+| `PORT` | Port number | No |
 
 ## 🧪 Testing
 
