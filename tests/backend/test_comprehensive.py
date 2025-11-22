@@ -59,13 +59,13 @@ def test_backend_endpoints():
             data = response.json()
             api_key = data.get('apiKey', '')
             if api_key:
-                print(f"  ✓ SUCCESS: API key loaded (length: {len(api_key)})", file=sys.stdout, flush=True)
+                print(f"  SUCCESS: API key loaded (length: {len(api_key)})", file=sys.stdout, flush=True)
             else:
-                print(f"  ⚠ WARNING: No API key in .env", file=sys.stdout, flush=True)
+                print(f"  WARNING: No API key in .env", file=sys.stdout, flush=True)
         else:
-            print(f"  ✗ FAILED: {response.text}", file=sys.stdout, flush=True)
+            print(f"  FAILED: {response.text}", file=sys.stdout, flush=True)
     except Exception as e:
-        print(f"  ✗ ERROR: {e}", file=sys.stdout, flush=True)
+        print(f"  ERROR: {e}", file=sys.stdout, flush=True)
     
     # Test 4: Guidance Endpoint
     print("\n[TEST 4] Testing /api/guidance...", file=sys.stdout, flush=True)
@@ -77,16 +77,16 @@ def test_backend_endpoints():
         if response.status_code == 200:
             data = response.json()
             if data.get('error'):
-                print(f"  ⚠ Response has error: {data['error']}", file=sys.stdout, flush=True)
+                print(f"   Response has error: {data['error']}", file=sys.stdout, flush=True)
             elif data.get('answer'):
-                print(f"  ✓ SUCCESS: Received guidance", file=sys.stdout, flush=True)
+                print(f"  SUCCESS: Received guidance", file=sys.stdout, flush=True)
                 print(f"  Answer preview: {data['answer'][:100]}...", file=sys.stdout, flush=True)
             else:
-                print(f"  ⚠ Unexpected response format", file=sys.stdout, flush=True)
+                print(f"  Unexpected response format", file=sys.stdout, flush=True)
         else:
-            print(f"  ✗ FAILED: {response.text}", file=sys.stdout, flush=True)
+            print(f"  FAILED: {response.text}", file=sys.stdout, flush=True)
     except Exception as e:
-        print(f"  ✗ ERROR: {e}", file=sys.stdout, flush=True)
+        print(f"  ERROR: {e}", file=sys.stdout, flush=True)
 
 def test_static_files():
     """Test that static files are served"""
@@ -145,13 +145,13 @@ def verify_no_external_calls():
             with open(service, "r", encoding="utf-8") as f:
                 content = f.read()
                 if "localhost:8000" in content or "127.0.0.1:8000" in content:
-                    print(f"  ✓ SUCCESS: {service} calls local backend")
+                    print(f"  SUCCESS: {service} calls local backend")
                 elif "api.alquran.cloud" in content or "cdn.jsdelivr.net" in content:
-                    print(f"  ✗ FAILED: {service} still calls external APIs")
+                    print(f"  FAILED: {service} still calls external APIs")
                 else:
-                    print(f"  ⚠ WARNING: Cannot determine for {service}")
+                    print(f"  WARNING: Cannot determine for {service}")
         except Exception as e:
-            print(f"  ⚠ Cannot check {service}: {e}")
+            print(f"  Cannot check {service}: {e}")
 
 def check_gemini_model():
     """Check Gemini 3 Pro model configuration"""

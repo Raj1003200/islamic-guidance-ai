@@ -19,9 +19,9 @@ from enum import Enum
 
 class TestStatus(Enum):
     """Test execution status"""
-    PASSED = "✓ PASSED"
-    FAILED = "✗ FAILED"
-    WARNING = "⚠ WARNING"
+    PASSED = "PASSED"
+    FAILED = "FAILED"
+    WARNING = "WARNING"
 
 
 @dataclass

@@ -18,10 +18,26 @@ import google.generativeai as genai
 from typing import Optional, List
 
 # Import async services
-from backend.services import (
-    search_quran_async,
-    search_hadith_async
-)
+# Try importing services with fallback for different environments
+try:
+    # Try absolute import (for Vercel/Root execution)
+    from backend.services import (
+        search_quran_async,
+        search_hadith_async
+    )
+    print("[SUCCESS] Loaded services from backend.services", file=sys.stdout, flush=True)
+except ImportError:
+    try:
+        # Try relative/direct import (for local backend/ execution)
+        from services import (
+            search_quran_async,
+            search_hadith_async
+        )
+        print("[SUCCESS] Loaded services from services (local)", file=sys.stdout, flush=True)
+    except ImportError as e:
+        print(f"[CRITICAL] Could not import services module: {e}", file=sys.stderr, flush=True)
+        print(f"Current sys.path: {sys.path}", file=sys.stderr, flush=True)
+        raise
 
 # Load environment variables
 load_dotenv()
@@ -71,14 +87,14 @@ model = None
 
 try:
     if not API_KEY:
-        print("⚠️  GEMINI_API_KEY not found in environment variables", file=sys.stderr, flush=True)
-        print("⚠️  AI features will be disabled until API key is configured", file=sys.stderr, flush=True)
+        print("[WARNING] GEMINI_API_KEY not found in environment variables", file=sys.stderr, flush=True)
+        print("[WARNING] AI features will be disabled until API key is configured", file=sys.stderr, flush=True)
     else:
         genai.configure(api_key=API_KEY)
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        print("✅ Successfully configured Gemini 2.0 Flash model", file=sys.stdout, flush=True)
+        print("[SUCCESS] Successfully configured Gemini 2.0 Flash model", file=sys.stdout, flush=True)
 except Exception as e:
-    print(f"❌ Error configuring Gemini model: {e}", file=sys.stderr, flush=True)
+    print(f"[ERROR] Error configuring Gemini model: {e}", file=sys.stderr, flush=True)
     import traceback
     traceback.print_exc()
     model = None
@@ -318,7 +334,7 @@ Query: "{request.query}"
             
             # Build context from search results
             if quran_results:
-                context_text += "\n📖 Quran Verses:\n"
+                context_text += "\n Quran Verses:\n"
                 for idx, verse in enumerate(quran_results, 1):
                     context_text += f"- {verse['text']} (Surah {verse['surah']} {verse['number']})\n"
                     citations.append({
@@ -330,7 +346,7 @@ Query: "{request.query}"
                 print("[SEARCH] No Quran verses found", file=sys.stdout, flush=True)
             
             if unique_hadiths:
-                context_text += f"\n📚 Hadiths (Found {len(unique_hadiths)}):\n"
+                context_text += f"\n Hadiths (Found {len(unique_hadiths)}):\n"
                 for idx, hadith in enumerate(unique_hadiths, 1):
                     context_text += (
                         f"- {hadith['text']} "
@@ -380,8 +396,8 @@ Use your internal knowledge of Islamic teachings to provide guidance.
 User Query: "{request.query}"
 
 CONTEXT FROM SOURCES:
-❌ Quran: No specific verses found
-❌ Hadith: No specific hadiths found
+[NO RESULTS] Quran: No specific verses found
+[NO RESULTS] Hadith: No specific hadiths found
 
 INSTRUCTION: No specific Quran verses or Hadiths were found for this query. 
 Politely inform the user that no specific sources were found in our search, 
@@ -505,7 +521,7 @@ Note: Citations will be added automatically from the sources. Focus on providing
         if "quota" in error_msg or "resource exhausted" in error_msg or "429" in error_msg:
             raise HTTPException(
                 status_code=429,
-                detail="API quota exceeded. Please try again later."
+                detail="Rate limit exhausted API request from server"
             )
         
         raise HTTPException(
@@ -709,11 +725,11 @@ if not IS_SERVERLESS:
         frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
         if os.path.exists(frontend_path):
             app.mount("/", StaticFiles(directory=frontend_path, html=True), name="static")
-            print(f"✅ Mounted static files from: {frontend_path}", file=sys.stdout, flush=True)
+            print(f"[SUCCESS] Mounted static files from: {frontend_path}", file=sys.stdout, flush=True)
         else:
-            print(f"⚠️  Frontend directory not found: {frontend_path}", file=sys.stderr, flush=True)
+            print(f"[WARNING] Frontend directory not found: {frontend_path}", file=sys.stderr, flush=True)
     except Exception as e:
-        print(f"❌ Error mounting static files: {e}", file=sys.stderr, flush=True)
+        print(f"[ERROR] Error mounting static files: {e}", file=sys.stderr, flush=True)
         import traceback
         traceback.print_exc()
 
@@ -724,10 +740,10 @@ if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
     
     print("="*80, file=sys.stdout, flush=True)
-    print("🚀 Starting Islamic Guidance AI server...", file=sys.stdout, flush=True)
-    print(f"📍 Host: {host}", file=sys.stdout, flush=True)
-    print(f"🔌 Port: {port}", file=sys.stdout, flush=True)
-    print(f"🌐 URL: http://localhost:{port}", file=sys.stdout, flush=True)
+    print(">>> Starting Islamic Guidance AI server...", file=sys.stdout, flush=True)
+    print(f"[HOST] {host}", file=sys.stdout, flush=True)
+    print(f"[PORT] {port}", file=sys.stdout, flush=True)
+    print(f"[URL] http://localhost:{port}", file=sys.stdout, flush=True)
     print("="*80, file=sys.stdout, flush=True)
     
     uvicorn.run(app, host=host,port=port, log_level="info")
