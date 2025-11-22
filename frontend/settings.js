@@ -97,7 +97,129 @@ window.addEventListener('DOMContentLoaded', async () => {
       apiKeyInput.value = storedKey;
     }
   }
+  
+  // Load available Gemini models
+  await loadModels();
 });
+
+// =============================================================================
+// GEMINI MODEL SELECTION
+// =============================================================================
+
+const modelSelect = document.getElementById('modelSelect');
+const modelInfo = document.getElementById('modelInfo');
+
+async function loadModels() {
+  try {
+    const response = await fetch('/api/models');
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.success && data.models) {
+      // Clear loading option
+      modelSelect.innerHTML = '';
+      
+      // Populate dropdown with models
+      data.models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = model.name;
+        
+        // Mark current model as selected
+        if (model.id === data.current_model) {
+          option.selected = true;
+        }
+        
+        modelSelect.appendChild(option);
+      });
+      
+      // Update model info for current selection
+      updateModelInfo(data.current_model, data.models);
+      
+      console.log(`Loaded ${data.models.length} Gemini models`);
+    }
+  } catch (err) {
+    console.error('Failed to load models:', err);
+    modelSelect.innerHTML = '<option value="">Failed to load models</option>';
+    modelInfo.textContent = 'Error loading models. Please refresh the page.';
+    modelInfo.style.color = '#e74c3c';
+  }
+}
+
+function updateModelInfo(modelId, models) {
+  const model = models.find(m => m.id === modelId);
+  if (model) {
+    const inputTokens = (model.input_tokens / 1000).toFixed(0) + 'K';
+    const outputTokens = (model.output_tokens / 1000).toFixed(0) + 'K';
+    modelInfo.textContent = `Input: ${inputTokens} tokens | Output: ${outputTokens} tokens`;
+    modelInfo.style.color = 'var(--text-secondary)';
+  }
+}
+
+// Handle model selection change
+if (modelSelect) {
+  modelSelect.addEventListener('change', async (e) => {
+    const selectedModelId = e.target.value;
+    
+    if (!selectedModelId) return;
+    
+    try {
+      // Show loading state
+      const originalText = e.target.selectedOptions[0].text;
+      e.target.selectedOptions[0].text = originalText + ' (Switching...)';
+      
+      const response = await fetch('/api/models/set', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modelId: selectedModelId })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update info display
+        const models = Array.from(modelSelect.options).map(opt => ({
+          id: opt.value,
+          name: opt.text,
+          input_tokens: 0,
+          output_tokens: 0
+        }));
+        
+        // Fetch full model data
+        const modelsResponse = await fetch('/api/models');
+        if (modelsResponse.ok) {
+          const modelsData = await modelsResponse.json();
+          updateModelInfo(selectedModelId, modelsData.models);
+        }
+        
+        showStatus(`Model changed to ${data.model.name}! Takes effect immediately.`);
+        
+        // Restore original text
+        e.target.selectedOptions[0].text = originalText;
+      } else {
+        const error = await response.json();
+        showStatus(`Failed to change model: ${error.detail}`, true);
+        
+        // Revert selection
+        await loadModels();
+      }
+    } catch (err) {
+      showStatus(`Error changing model: ${err.message}`, true);
+      console.error('Model change error:', err);
+      
+      // Reload models to reset selection
+      await loadModels();
+    }
+  });
+}
+
+// =============================================================================
+// API KEY MANAGEMENT
+// =============================================================================
+
 
 saveBtn.addEventListener('click', async () => {
   const key = apiKeyInput.value.trim();

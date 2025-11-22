@@ -7,31 +7,44 @@ import os
 import sys
 import json
 import traceback
-import uvicorn
-import asyncio
-import hashlib
 import uuid
 import time
-from fastapi import FastAPI, HTTPException
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
-from fastapi import Request
-from pydantic import BaseModel
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
-from dotenv import load_dotenv
-import google.generativeai as genai
-from typing import Optional, List, Dict
+
+try:
+    from dotenv import load_dotenv
+except ImportError as ex:
+    print(f"[ERROR] Missing dependencies. Please install requirements.txt: {ex}", file=sys.stderr)
+    sys.exit(1)
+
+
+try:
+    import uvicorn
+    import asyncio
+    import hashlib
+    from fastapi import FastAPI, HTTPException
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.middleware.gzip import GZipMiddleware
+    from fastapi import Request
+    from pydantic import BaseModel
+    from slowapi import Limiter, _rate_limit_exceeded_handler
+    from slowapi.util import get_remote_address
+    from slowapi.errors import RateLimitExceeded
+    import google.generativeai as genai
+    from typing import Optional, List, Dict
+    print("[IMPORT] Core dependencies loaded successfully", file=sys.stdout, flush=True)
+except ImportError as e:
+    print(f"[CRITICAL] Failed to import core dependencies: {e}", file=sys.stderr, flush=True)
+    print(f"[CRITICAL] Stack trace: {traceback.format_exc()}", file=sys.stderr, flush=True)
+    raise
 
 # Import serverless detection utility
 try:
     from backend.utils import detect_serverless_environment
-except ImportError:
+except ImportError as ex:
     try:
         from utils import detect_serverless_environment
-    except ImportError:
+    except ImportError as ex:
         # Fallback: Simple detection if utils module fails
         def detect_serverless_environment() -> bool:
             return bool(
@@ -49,8 +62,14 @@ except ImportError:
 # Load environment variables
 load_dotenv()
 
-# Environment Configuration
-IS_SERVERLESS = detect_serverless_environment()
+# Environment Configuration - More robust detection
+# Check if we're actually in Vercel (not just local with VERCEL_ENV set)
+IS_SERVERLESS = bool(
+    os.getenv("VERCEL") == "1" or 
+    os.getenv("AWS_LAMBDA_FUNCTION_NAME") or 
+    os.getenv("AWS_EXECUTION_ENV") or
+    (os.getenv("VERCEL_ENV") and os.getenv("VERCEL_ENV") != "development")
+)
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Cache models and extractors at module level (Issue #16 - P2)
@@ -375,18 +394,48 @@ Query: "{query}"
     return extract_keywords_custom(query, max_keywords=3)
 
 # =============================================================================
-# GEMINI MODEL CACHING (Issue #16 - P2)
+# GEMINI MODEL CONFIGURATION & SELECTION
 # =============================================================================
 
-def get_gemini_model():
+# List of available Gemini models (fetched from API)
+GEMINI_MODELS = [
+    {'id': 'gemini-2.0-flash-exp', 'name': 'Gemini 2.0 Flash Exp', 'input_tokens': 1048576, 'output_tokens': 65536},
+    {'id': 'gemini-2.5-flash-preview', 'name': 'Gemini 2.5 Flash Preview', 'input_tokens': 1048576, 'output_tokens': 65536},
+    {'id': 'gemini-2.5-pro-preview', 'name': 'Gemini 2.5 Pro Preview', 'input_tokens': 1048576, 'output_tokens': 65536},
+    {'id': 'gemini-3-pro-preview', 'name': 'Gemini 3 Pro Preview', 'input_tokens': 1048576, 'output_tokens': 65536},
+    {'id': 'gemini-flash-latest', 'name': 'Gemini Flash Latest', 'input_tokens': 1048576, 'output_tokens': 65536},
+    {'id': 'gemini-pro-latest', 'name': 'Gemini Pro Latest', 'input_tokens': 1048576, 'output_tokens': 65536},
+    {'id': 'gemini-2.5-flash-lite', 'name': 'Gemini 2.5 Flash Lite', 'input_tokens': 1048576, 'output_tokens': 65536},
+    {'id': 'gemini-1.5-pro', 'name': 'Gemini 1.5 Pro', 'input_tokens': 2097152, 'output_tokens': 65536},
+    {'id': 'gemini-1.5-flash', 'name': 'Gemini 1.5 Flash', 'input_tokens': 1048576, 'output_tokens': 65536},
+]
+
+# Default model
+DEFAULT_MODEL = 'gemini-2.0-flash-exp'
+
+# Current selected model (can be changed via API)
+_selected_model_id = DEFAULT_MODEL
+_cached_model = None
+
+def get_gemini_model(model_id: Optional[str] = None):
     """
-    Get cached Gemini model instance to avoid recreation on every call.
+    Get cached Gemini model instance with optional model selection.
+    
+    Args:
+        model_id: Optional model ID to use. If None, uses currently selected model.
     
     Returns:
         Gemini model or None if unavailable
     """
-    global _cached_model
+    global _cached_model, _selected_model_id
     
+    # If model_id is provided and different from current, clear cache
+    if model_id and model_id != _selected_model_id:
+        _selected_model_id = model_id
+        _cached_model = None
+        print(f"[GEMINI] Switching to model: {model_id}", file=sys.stdout, flush=True)
+    
+    # Return cached model if available
     if _cached_model is not None:
         return _cached_model
     
@@ -396,12 +445,99 @@ def get_gemini_model():
     
     try:
         genai.configure(api_key=API_KEY)
-        _cached_model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        print("[SUCCESS] Gemini model initialized and cached", file=sys.stdout, flush=True)
+        _cached_model = genai.GenerativeModel(_selected_model_id)
+        print(f"[SUCCESS] Gemini model '{_selected_model_id}' initialized and cached", file=sys.stdout, flush=True)
         return _cached_model
     except Exception as e:
-        print(f"[ERROR] Error configuring Gemini model: {e}", file=sys.stderr, flush=True)
+        print(f"[ERROR] Error configuring Gemini model '{_selected_model_id}': {e}", file=sys.stderr, flush=True)
         return None
+
+def get_current_model_id() -> str:
+    """Get the currently selected model ID"""
+    return _selected_model_id
+
+def set_model(model_id: str) -> bool:
+    """
+    Set the current Gemini model.
+    
+    Args:
+        model_id: Model ID to switch to
+    
+    Returns:
+        True if successful, False otherwise
+    """
+    global _selected_model_id, _cached_model
+    
+    # Validate model ID
+    valid_ids = [m['id'] for m in GEMINI_MODELS]
+    if model_id not in valid_ids:
+        print(f"[ERROR] Invalid model ID: {model_id}", file=sys.stderr, flush=True)
+        return False
+    
+    # Clear cache and set new model
+    _selected_model_id = model_id
+    _cached_model = None
+    
+    print(f"[GEMINI] Model changed to: {model_id}", file=sys.stdout, flush=True)
+    return True
+
+
+# =============================================================================
+# LIFECYCLE EVENTS
+# =============================================================================
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Modern FastAPI lifecycle handler.
+    Replaces deprecated @app.on_event("startup") and @app.on_event("shutdown")
+    """
+    # ========== STARTUP ==========
+    print("[STARTUP] Connecting to cache service...", file=sys.stdout, flush=True)
+    
+    # Validate environment variables
+    if not API_KEY:
+        print("[WARNING] GEMINI_API_KEY not set - API will be unavailable", file=sys.stderr, flush=True)
+    else:
+        print("[SUCCESS] GEMINI_API_KEY found", file=sys.stdout, flush=True)
+    
+    # Connect to cache
+    try:
+        await cache.connect()
+    except Exception as e:
+        print(f"[WARNING] Cache connection failed: {e}", file=sys.stderr, flush=True)
+    
+    # Pre-initialize Gemini model
+    get_gemini_model()
+    
+    # Pre-initialize keyword extractors
+    if YAKE_AVAILABLE:
+        get_yake_extractor()
+        print("[STARTUP] YAKE extractor ready", file=sys.stdout, flush=True)
+    else:
+        print("[STARTUP] YAKE not available - using custom extractor", file=sys.stderr, flush=True)
+    
+    # Initialize custom extractor
+    custom_ext = get_custom_extractor()
+    if custom_ext:
+        print("[STARTUP] Custom keyword extractor ready", file=sys.stdout, flush=True)
+    else:
+        print("[WARNING] Custom extractor unavailable - limited keyword extraction", file=sys.stderr, flush=True)
+    
+    print("[STARTUP] Application ready", file=sys.stdout, flush=True)
+    
+    yield  # App runs here
+    
+    # ========== SHUTDOWN ==========
+    print("[SHUTDOWN] Closing cache connection...", file=sys.stdout, flush=True)
+    try:
+        await cache.close()
+    except Exception as e:
+        print(f"[SHUTDOWN] Error closing cache: {e}", file=sys.stderr, flush=True)
+    
+    print("[SHUTDOWN] Cleanup complete", file=sys.stdout, flush=True)
 
 # =============================================================================
 # UTILITY FUNCTIONS
@@ -470,7 +606,8 @@ def validate_response_size(data: dict, max_size_bytes: int = 4_500_000) -> dict:
 app = FastAPI(
     title="Islamic Guidance AI",
     description="AI-powered Islamic guidance using Quran and Hadith",
-    version="2.1.0"
+    version="2.1.0",
+    lifespan=lifespan
 )
 
 # Rate Limiting Setup (Using SlowAPI for standard endpoints, custom for /api/guidance)
@@ -523,50 +660,6 @@ print(f"  GEMINI_API_KEY: {'Set (length: ' + str(len(API_KEY)) + ')' if API_KEY 
 print(f"\nCORS Origins: {allowed_origins}", file=sys.stdout, flush=True)
 print("="*80, file=sys.stdout, flush=True)
 
-
-# =============================================================================
-# LIFECYCLE EVENTS
-# =============================================================================
-
-@app.on_event("startup")
-async def startup_event():
-    """Startup validation and cache connection (Issue #20 - P3)"""
-    print("[STARTUP] Connecting to cache service...", file=sys.stdout, flush=True)
-    
-    # Validate environment variables (Issue #20 - P3)
-    if not API_KEY:
-        print("[WARNING] GEMINI_API_KEY not set - API will be unavailable", file=sys.stderr, flush=True)
-    else:
-        print("[SUCCESS] GEMINI_API_KEY found", file=sys.stdout, flush=True)
-    
-    # Connect to cache
-    await cache.connect()
-    
-    # Pre-initialize Gemini model (Issue #16 - P2)
-    get_gemini_model()
-    
-    # Pre-initialize keyword extractors (Issue #16 - P2)
-    if YAKE_AVAILABLE:
-        get_yake_extractor()
-        print("[STARTUP] YAKE extractor ready", file=sys.stdout, flush=True)
-    else:
-        print("[STARTUP] YAKE not available - using custom extractor", file=sys.stderr, flush=True)
-    
-    # Initialize custom extractor (always available as fallback)
-    custom_ext = get_custom_extractor()
-    if custom_ext:
-        print("[STARTUP] Custom keyword extractor ready", file=sys.stdout, flush=True)
-    else:
-        print("[WARNING] Custom extractor unavailable - limited keyword extraction", file=sys.stderr, flush=True)
-    
-    print("[STARTUP] Application ready", file=sys.stdout, flush=True)
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup resources on shutdown"""
-    print("[SHUTDOWN] Closing cache connection...", file=sys.stdout, flush=True)
-    await cache.close()
-
 # =============================================================================
 # REQUEST/RESPONSE MODELS
 # =============================================================================
@@ -593,10 +686,7 @@ class APIKeyRequest(BaseModel):
 
 @app.get("/api/health")
 async def health_check():
-    """
-    Comprehensive health check endpoint (Issue #15 - P2)
-    Tests all critical services: Gemini AI, Cache, External APIs, Keyword Extractors
-    """
+    """Comprehensive health check with better error handling"""
     health_status = {
         "status": "healthy",
         "service": "IslamicGuideAI",
@@ -605,38 +695,39 @@ async def health_check():
         "checks": {}
     }
     
-    # Check YAKE
-    health_status["checks"]["yake_extractor"] = "✓ Available" if YAKE_AVAILABLE else "✗ Not installed"
+    # Check extractors
+    health_status["checks"]["yake_extractor"] = "Available" if YAKE_AVAILABLE else "Not installed"
+    health_status["checks"]["custom_extractor"] = "Available" if KeywordExtractorNoDeps else "Unavailable"
     
-    # Check Custom Extractor
-    custom_ext = get_custom_extractor()
-    health_status["checks"]["custom_extractor"] = "✓ Available" if custom_ext else "✗ Unavailable"
-    
-    # Check Gemini AI
+    # Check Gemini
     try:
         model = get_gemini_model()
-        if model:
-            health_status["checks"]["gemini_ai"] = "✓ Available"
-        else:
-            health_status["checks"]["gemini_ai"] = "✗ Unavailable (no API key)"
-            health_status["status"] = "degraded"
+        health_status["checks"]["gemini_ai"] = "Available" if model else "Unavailable"
     except Exception as e:
-        health_status["checks"]["gemini_ai"] = f"✗ Error: {str(e)[:50]}"
+        health_status["checks"]["gemini_ai"] = f"Error: {str(e)[:50]}"
         health_status["status"] = "degraded"
     
-    # Check Cache
+    # Check Cache (with ping() fix)
     try:
         ping_result = await cache.ping()
-        health_status["checks"]["cache"] = "✓ Connected" if ping_result else "✗ Not responding"
+        health_status["checks"]["cache"] = "Connected" if ping_result else "Not responding"
     except Exception as e:
-        health_status["checks"]["cache"] = f"✗ Error: {str(e)[:50]}"
+        health_status["checks"]["cache"] = f"Error: {str(e)[:50]}"
     
-    # Check Quran API (sample request)
+    # Check Quran API
     try:
         test_results = await search_quran_async("test", max_results=1)
-        health_status["checks"]["quran_api"] = "✓ Reachable"
+        health_status["checks"]["quran_api"] = "Reachable"
     except Exception as e:
-        health_status["checks"]["quran_api"] = f"✗ Error: {str(e)[:50]}"
+        health_status["checks"]["quran_api"] = f"Error: {str(e)[:50]}"
+        health_status["status"] = "degraded"
+
+    # check for Hadith API
+    try:
+        test_results = await search_hadith_async(topic="test", collections=["eng-bukhari", "eng-muslim"], max_per_collection=1)
+        health_status["checks"]["hadith_api"] = "Reachable"
+    except Exception as e:
+        health_status["checks"]["hadith_api"] = f"Error: {str(e)[:50]}"
         health_status["status"] = "degraded"
     
     return health_status
@@ -1100,6 +1191,95 @@ async def save_api_key(request: APIKeyRequest):
         raise HTTPException(
             status_code=500, 
             detail=f"Error saving API key: {str(e)[:100]}"
+        )
+
+# =============================================================================
+# GEMINI MODEL MANAGEMENT ENDPOINTS
+# =============================================================================
+
+@app.get("/api/models")
+async def get_models():
+    """
+    Get list of available Gemini models.
+    
+    Returns:
+        List of models with their IDs, names, and token limits
+    """
+    try:
+        return {
+            "success": True,
+            "models": GEMINI_MODELS,
+            "current_model": get_current_model_id(),
+            "default_model": DEFAULT_MODEL
+        }
+    except Exception as e:
+        print(f"[MODELS] Error: {e}", file=sys.stderr, flush=True)
+        raise HTTPException(status_code=500, detail=f"Error fetching models: {str(e)}")
+
+@app.get("/api/models/current")
+async def get_current_model():
+    """
+    Get the currently selected Gemini model.
+    
+    Returns:
+        Current model information
+    """
+    try:
+        current_id = get_current_model_id()
+        current_model = next((m for m in GEMINI_MODELS if m['id'] == current_id), None)
+        
+        return {
+            "success": True,
+            "model": current_model,
+            "model_id": current_id
+        }
+    except Exception as e:
+        print(f"[MODELS] Error: {e}", file=sys.stderr, flush=True)
+        raise HTTPException(status_code=500, detail=f"Error getting current model: {str(e)}")
+
+class ModelRequest(BaseModel):
+    modelId: str
+
+@app.post("/api/models/set")
+async def set_current_model(request: ModelRequest):
+    """
+    Set the current Gemini model.
+    
+    Args:
+        request: ModelRequest with modelId
+    
+    Returns:
+        Success status and new model information
+    """
+    try:
+        model_id = request.modelId.strip()
+        
+        if not model_id:
+            raise HTTPException(status_code=400, detail="Model ID cannot be empty")
+        
+        # Set the model
+        success = set_model(model_id)
+        
+        if not success:
+            raise HTTPException(status_code=400, detail=f"Invalid model ID: {model_id}")
+        
+        # Get the new model info
+        new_model = next((m for m in GEMINI_MODELS if m['id'] == model_id), None)
+        
+        return {
+            "success": True,
+            "message": f"Model changed to {new_model['name']}",
+            "model": new_model,
+            "note": "The new model will be used for all subsequent requests"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[SET-MODEL] Error: {e}", file=sys.stderr, flush=True)
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error setting model: {str(e)[:100]}"
         )
 
 

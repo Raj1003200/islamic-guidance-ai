@@ -183,6 +183,33 @@ h1 {
   border-color: #3498db;
 }
 
+#modelSelect {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: 2px solid #bdc3c7;
+  border-radius: 0.5rem;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  margin-bottom: 0.5rem;
+}
+
+#modelSelect:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.model-info {
+  display: block;
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+
 .settings-panel input {
   width: 100%;
   padding: 0.5rem;
@@ -247,7 +274,8 @@ html[data-theme='dark'] #searchBtn {
 }
 html[data-theme='dark'] .source-select,
 html[data-theme='dark'] .hadith-collection-select,
-html[data-theme='dark'] #themeSelect {
+html[data-theme='dark'] #themeSelect,
+html[data-theme='dark'] #modelSelect {
   background-color: #333;
   color: #fff;
   border-color: #555;
@@ -287,7 +315,8 @@ html[data-theme='traditional'] h1 {
 html[data-theme='traditional'] #query,
 html[data-theme='traditional'] .source-select,
 html[data-theme='traditional'] .hadith-collection-select,
-html[data-theme='traditional'] #themeSelect {
+html[data-theme='traditional'] #themeSelect,
+html[data-theme='traditional'] #modelSelect {
   background: #faf7f2;
   border-color: #c9a961;
   color: #3e2723;
@@ -319,7 +348,8 @@ html[data-theme='minimal'] h1 {
 html[data-theme='minimal'] #query,
 html[data-theme='minimal'] .source-select,
 html[data-theme='minimal'] .hadith-collection-select,
-html[data-theme='minimal'] #themeSelect {
+html[data-theme='minimal'] #themeSelect,
+html[data-theme='minimal'] #modelSelect {
   background: #fafafa;
   border-color: #ddd;
   color: #333;

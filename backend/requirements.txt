@@ -7,3 +7,10 @@ aiohttp>=3.9.0
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
 python-multipart>=0.0.6
+
+# Caching & Rate Limiting
+redis>=5.0.0
+slowapi>=0.1.9
+
+# Keyword Extraction
+yake>=0.6.0

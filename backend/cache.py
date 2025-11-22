@@ -58,6 +58,19 @@ class CacheService:
     async def close(self):
         if self.redis:
             await self.redis.close()
+    
+    async def ping(self) -> bool:
+        """Ping cache to check if it's alive"""
+        try:
+            if self.is_redis_enabled and self.redis:
+                await self.redis.ping()
+                return True
+            else:
+                # In-memory cache is always available
+                return True
+        except Exception as e:
+            print(f"[CACHE] Ping failed: {e}", file=sys.stderr, flush=True)
+            return False
 
 # Global cache instance
 cache = CacheService()
