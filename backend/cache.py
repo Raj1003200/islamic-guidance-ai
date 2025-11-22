@@ -1,0 +1,63 @@
+import os
+import json
+import redis.asyncio as redis
+from typing import Optional, Any
+import sys
+
+class CacheService:
+    def __init__(self):
+        self.redis: Optional[redis.Redis] = None
+        self.memory_cache = {}
+        self.is_redis_enabled = False
+        self.ttl_default = 3600  # 1 hour default
+
+    async def connect(self):
+        """Initialize Redis connection if URL is available"""
+        redis_url = os.getenv("KV_URL") or os.getenv("REDIS_URL")
+        
+        if redis_url:
+            try:
+                self.redis = redis.from_url(redis_url, decode_responses=True)
+                await self.redis.ping()
+                self.is_redis_enabled = True
+                print("[CACHE] Connected to Redis/Vercel KV", file=sys.stdout, flush=True)
+            except Exception as e:
+                print(f"[CACHE] Failed to connect to Redis: {e}", file=sys.stderr, flush=True)
+                self.is_redis_enabled = False
+        else:
+            print("[CACHE] No Redis URL found, using in-memory cache", file=sys.stdout, flush=True)
+
+    async def get(self, key: str) -> Optional[Any]:
+        """Get value from cache"""
+        try:
+            if self.is_redis_enabled and self.redis:
+                value = await self.redis.get(key)
+                if value:
+                    return json.loads(value)
+            else:
+                # In-memory fallback (check TTL if I were implementing full LRU, but simple dict for now)
+                # For simple fallback, we won't implement TTL expiration strictly
+                return self.memory_cache.get(key)
+        except Exception as e:
+            print(f"[CACHE] Error getting key {key}: {e}", file=sys.stderr, flush=True)
+            return None
+
+    async def set(self, key: str, value: Any, ttl: int = 3600):
+        """Set value in cache with TTL"""
+        try:
+            json_value = json.dumps(value)
+            if self.is_redis_enabled and self.redis:
+                await self.redis.set(key, json_value, ex=ttl)
+            else:
+                self.memory_cache[key] = value
+                # In a real in-memory cache, we'd handle cleanup. 
+                # For now, this is just a fallback for dev/testing if Redis fails.
+        except Exception as e:
+            print(f"[CACHE] Error setting key {key}: {e}", file=sys.stderr, flush=True)
+
+    async def close(self):
+        if self.redis:
+            await self.redis.close()
+
+# Global cache instance
+cache = CacheService()

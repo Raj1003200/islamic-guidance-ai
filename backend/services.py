@@ -10,6 +10,20 @@ from typing import List, Dict, Optional
 import time
 import sys
 
+# Import cache service
+try:
+    from backend.cache import cache
+except ImportError:
+    try:
+        from cache import cache
+    except ImportError:
+        # Fallback mock if cache module completely fails
+        class MockCache:
+            async def get(self, k): return None
+            async def set(self, k, v, t=0): pass
+            async def connect(self): pass
+        cache = MockCache()
+
 # API Configuration Constants
 QURAN_API_BASE = "https://api.alquran.cloud/v1"
 HADITH_API_BASES = [
@@ -18,7 +32,8 @@ HADITH_API_BASES = [
 ]
 
 # Timeout and retry configuration optimized for Vercel
-REQUEST_TIMEOUT = 8  # Reduced from 10s to fit within Vercel limits
+# Timeout and retry configuration optimized for Vercel
+REQUEST_TIMEOUT = 5  # Reduced from 8s to 5s to ensure Vercel 10s limit isn't hit
 MAX_RETRIES = 2      # Reduced from 3 to minimize latency
 MAX_CONCURRENT_REQUESTS = 3  # Limit concurrent API calls
 
@@ -60,6 +75,13 @@ async def search_quran_async(keyword: str, max_results: int = 3) -> List[Dict]:
         return []
         
     try:
+        # Check cache first
+        cache_key = f"quran_search:{keyword}:{max_results}"
+        cached_result = await cache.get(cache_key)
+        if cached_result:
+            print(f"[CACHE] Hit for Quran search: '{keyword}'", file=sys.stdout, flush=True)
+            return cached_result
+
         encoded = urllib.parse.quote(keyword)
         url = f"{QURAN_API_BASE}/search/{encoded}/all/en"
         
@@ -105,6 +127,8 @@ async def search_quran_async(keyword: str, max_results: int = 3) -> List[Dict]:
                             print(f"[QURAN API] Result {idx}: Surah {result['surah']}, Verse {result['numberInSurah']}", file=sys.stdout, flush=True)
                             print(f"[QURAN API] Text preview: {result['text'][:100]}...", file=sys.stdout, flush=True)
                         
+                        # Cache the results (TTL: 1 hour)
+                        await cache.set(cache_key, results, ttl=3600)
                         return results
                     else:
                         print("[QURAN API] No matches found in response", file=sys.stdout, flush=True)
@@ -155,6 +179,14 @@ async def fetch_hadith_collection(
         Tries multiple CDN sources with fallback logic for reliability
     """
     book = collection_code.replace('eng-', '') if collection_code.startswith('eng-') else collection_code
+    
+    # Check cache first (Critical for performance - these are large files)
+    cache_key = f"hadith_collection:{book}"
+    cached_data = await cache.get(cache_key)
+    if cached_data:
+        print(f"[CACHE] Hit for Hadith collection: '{book}'", file=sys.stdout, flush=True)
+        return cached_data
+
     print(f"[HADITH API] Fetching collection: '{book}'", file=sys.stdout, flush=True)
     
     # Generate URLs to try with priority order
@@ -188,6 +220,9 @@ async def fetch_hadith_collection(
                         if metadata:
                             print(f"[HADITH API] Metadata - Name: {metadata.get('name', 'N/A')}, Sections: {len(metadata.get('sections', {}))}", file=sys.stdout, flush=True)
                         
+                        # Cache the entire collection (TTL: 24 hours)
+                        # These are static files, so we can cache for a long time
+                        await cache.set(cache_key, hadiths, ttl=86400)
                         return hadiths
                     else:
                         print("[HADITH API] No 'hadiths' key in response", file=sys.stderr, flush=True)

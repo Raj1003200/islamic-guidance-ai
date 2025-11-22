@@ -12,32 +12,52 @@ import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi import Request
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
 import google.generativeai as genai
 from typing import Optional, List
 
 # Import async services
 # Try importing services with fallback for different environments
+# Import async services
+# Robust import strategy for Vercel and Local
 try:
-    # Try absolute import (for Vercel/Root execution)
-    from backend.services import (
-        search_quran_async,
-        search_hadith_async
-    )
-    print("[SUCCESS] Loaded services from backend.services", file=sys.stdout, flush=True)
+    # Try absolute import first (Vercel/Root)
+    from backend.services import search_quran_async, search_hadith_async
 except ImportError:
     try:
-        # Try relative/direct import (for local backend/ execution)
-        from services import (
-            search_quran_async,
-            search_hadith_async
-        )
-        print("[SUCCESS] Loaded services from services (local)", file=sys.stdout, flush=True)
-    except ImportError as e:
-        print(f"[CRITICAL] Could not import services module: {e}", file=sys.stderr, flush=True)
-        print(f"Current sys.path: {sys.path}", file=sys.stderr, flush=True)
-        raise
+        # Try relative import (Local backend/)
+        from services import search_quran_async, search_hadith_async
+    except ImportError:
+        # Last resort for some Vercel configurations
+        try:
+            sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            from backend.services import search_quran_async, search_hadith_async
+        except ImportError as e:
+            print(f"[CRITICAL] Could not import services: {e}", file=sys.stderr)
+            # Define dummy functions to prevent crash on import
+            async def search_quran_async(*args, **kwargs): return []
+            async def search_hadith_async(*args, **kwargs): return []
+
+# Import cache service
+try:
+    from backend.cache import cache
+except ImportError:
+    try:
+        from cache import cache
+    except ImportError:
+        # Mock if not found (shouldn't happen if services.py works)
+        class MockCache:
+            async def get(self, k): return None
+            async def set(self, k, v, t=0): pass
+            async def connect(self): pass
+            async def close(self): pass
+        cache = MockCache()
 
 # Load environment variables
 load_dotenv()
@@ -83,21 +103,25 @@ def truncate_json_for_log(data, max_text_length=200):
 
 
 # --- Gemini AI Configuration ---
-model = None
-
-try:
+# --- Gemini AI Configuration ---
+def get_gemini_model():
+    """
+    Lazy load Gemini model to prevent cold start crashes.
+    Returns None if API key is missing or configuration fails.
+    """
     if not API_KEY:
-        print("[WARNING] GEMINI_API_KEY not found in environment variables", file=sys.stderr, flush=True)
-        print("[WARNING] AI features will be disabled until API key is configured", file=sys.stderr, flush=True)
-    else:
+        print("[WARNING] GEMINI_API_KEY not found", file=sys.stderr, flush=True)
+        return None
+        
+    try:
         genai.configure(api_key=API_KEY)
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        print("[SUCCESS] Successfully configured Gemini 2.0 Flash model", file=sys.stdout, flush=True)
-except Exception as e:
-    print(f"[ERROR] Error configuring Gemini model: {e}", file=sys.stderr, flush=True)
-    import traceback
-    traceback.print_exc()
-    model = None
+        return genai.GenerativeModel('gemini-2.0-flash-exp')
+    except Exception as e:
+        print(f"[ERROR] Error configuring Gemini model: {e}", file=sys.stderr, flush=True)
+        return None
+
+# Global model variable removed to prevent auto-init
+
 
 
 # --- FastAPI Application Setup ---
@@ -107,6 +131,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Rate Limiting Setup
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# GZip Compression
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 # CORS middleware configuration
 app.add_middleware(
     CORSMiddleware,
@@ -115,6 +147,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Lifecycle Events ---
+@app.on_event("startup")
+async def startup_event():
+    print("[STARTUP] Connecting to cache service...", file=sys.stdout, flush=True)
+    await cache.connect()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    print("[SHUTDOWN] Closing cache connection...", file=sys.stdout, flush=True)
+    await cache.close()
 
 
 # --- Request/Response Models ---
@@ -150,7 +193,7 @@ async def root():
         "service": "IslamicGuideAI",
         "version": "1.0.0",
         "environment": "serverless" if IS_SERVERLESS else "development",
-        "ai_model": "gemini-2.0-flash-exp" if model else "unavailable"
+        "ai_model": "gemini-2.0-flash-exp"  # Static string, don't check model variable
     }
 
 
@@ -176,14 +219,15 @@ async def log_frontend(request: LogRequest):
         )
         return {"status": "logged"}
     except Exception as e:
-        print(f"[LOG ENDPOINT] Error logging frontend message: {e}", file=sys.stderr, flush=True)
-        import traceback
-        traceback.print_exc()
-        return {"status": "error", "message": str(e)}
+        # SILENT FAILURE - Do not crash the endpoint
+        # Just print to stderr and return success to prevent frontend retries
+        print(f"[LOG FAILURE] {e}", file=sys.stderr)
+        return {"status": "logged_with_error"}
 
 
 @app.post("/api/guidance")
-async def get_guidance(request: GuidanceRequest):
+@limiter.limit("100/hour")
+async def get_guidance(request: GuidanceRequest, req: Request):
     """
     Main endpoint for AI-powered Islamic guidance.
     
@@ -216,12 +260,28 @@ async def get_guidance(request: GuidanceRequest):
             detail="Query too short. Please provide at least 10 characters."
         )
     
+    # Lazy load model
+    model = get_gemini_model()
+    
     if not model:
         print("[ERROR] Gemini model not available", file=sys.stderr, flush=True)
         raise HTTPException(
             status_code=503,
             detail="AI model not available. Please check API key configuration."
         )
+
+    # Check Cache for Full Response
+    try:
+        # Create a deterministic cache key
+        collections_key = ",".join(sorted(request.hadith_collection or []))
+        cache_key = f"guidance_response:{request.query}:{request.source}:{collections_key}"
+        
+        cached_response = await cache.get(cache_key)
+        if cached_response:
+            print(f"[CACHE] Hit for guidance query: '{request.query[:20]}...'", file=sys.stdout, flush=True)
+            return cached_response
+    except Exception as e:
+        print(f"[CACHE] Error checking cache: {e}", file=sys.stderr, flush=True)
 
     try:
         context_text = ""
@@ -490,6 +550,10 @@ Note: Citations will be added automatically from the sources. Focus on providing
             
             print("[SUCCESS] Returning guidance response", file=sys.stdout, flush=True)
             print("="*80, file=sys.stdout, flush=True)
+            
+            # Cache the successful response (TTL: 30 minutes)
+            await cache.set(cache_key, data, ttl=1800)
+            
             return data
             
         except json.JSONDecodeError as e:

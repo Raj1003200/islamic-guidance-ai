@@ -81,6 +81,17 @@ const HADITH_COLLECTIONS = {
   ]
 };
 
+// Input Sanitization
+function sanitizeInput(text) {
+  if (!text) return '';
+  // Remove HTML tags
+  let sanitized = text.replace(/<[^>]*>/g, '');
+  // Remove special characters that might be used for injection (basic)
+  // We allow common punctuation but remove things like braces, brackets if they look like code
+  sanitized = sanitized.replace(/[{}]/g, ''); 
+  return sanitized.trim();
+}
+
 // Validate input length
 function isValidInput(text) {
   return text && text.trim().length >= 10;
@@ -109,17 +120,40 @@ function simulateLoadingStages(callback) {
 }
 
 // Logging utility
+// Logging utility with Circuit Breaker
+let logFailureCount = 0;
+const MAX_LOG_FAILURES = 3;
+
 async function logToServer(level, message) {
+  // Circuit breaker: stop trying if we have too many failures
+  if (logFailureCount >= MAX_LOG_FAILURES) {
+    console.log(`[${level.toUpperCase()}] ${message}`); // Fallback to console
+    return;
+  }
+
   const timestamp = new Date().toISOString();
   console.log(`[${level.toUpperCase()}] ${message}`); // Keep console log for debugging
+  
   try {
+    // Add short timeout for logs to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout for logs
+
     await fetch('/api/log', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ level, message, timestamp })
+      body: JSON.stringify({ level, message, timestamp }),
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
+    logFailureCount = 0; // Reset on success
   } catch (e) {
+    logFailureCount++;
     console.error('Failed to send log to server:', e);
+    if (logFailureCount >= MAX_LOG_FAILURES) {
+      console.warn('Disabling server logging due to repeated failures');
+    }
   }
 }
 
@@ -164,11 +198,17 @@ async function fetchGuidance(query) {
     logToServer('info', `[API REQUEST] Sending POST to /api/guidance`);
     logToServer('info', `[API REQUEST] Body: ${JSON.stringify(requestBody)}`);
     
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
     const response = await fetch('/api/guidance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     
     logToServer('info', `[API RESPONSE] Status: ${response.status} ${response.statusText}`);
     logToServer('info', `[API RESPONSE] Headers: ${JSON.stringify(Object.fromEntries(response.headers))}`);
@@ -211,6 +251,10 @@ async function fetchGuidance(query) {
     
     return data;
   } catch (err) {
+    if (err.name === 'AbortError') {
+      logToServer('error', '[TIMEOUT] Request timed out after 15s');
+      return { error: 'Timeout', message: 'The request took too long. Please try again.' };
+    }
     logToServer('error', `[NETWORK ERROR] ${err.message}`);
     logToServer('error', `[NETWORK ERROR] Stack: ${err.stack}`);
     logToServer('info', '='.repeat(80));
@@ -275,7 +319,8 @@ searchBtn.addEventListener('click', async () => {
     return;
   }
   
-  logToServer('info', '[VALIDATION] Input validated successfully');
+  const sanitizedQuery = sanitizeInput(query);
+  logToServer('info', '[VALIDATION] Input validated and sanitized');
 
   // Reset previous result
   resultSection.classList.add('hidden');
@@ -284,7 +329,7 @@ searchBtn.addEventListener('click', async () => {
 
   // Simulate loading stages then fetch
   simulateLoadingStages(async () => {
-    const data = await fetchGuidance(query);
+    const data = await fetchGuidance(sanitizedQuery);
     if (data.error) {
       if (data.error === 'Irrelevant problem') {
         logToServer('warning', '[ERROR] Irrelevant problem detected');
