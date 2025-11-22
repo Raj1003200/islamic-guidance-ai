@@ -16,14 +16,30 @@
   <section class="hero">
     <img src="logo.svg" alt="Islamic Guidance AI" class="logo" />
     <h1>Islamic Guidance AI</h1>
-    <div class="search-wrapper">
-      <input
-        type="text"
-        id="query"
-        placeholder="Describe your situation... (e.g., 'I am feeling anxious about my future')"
-        autocomplete="off"
-      />
-      <button id="searchBtn">Seek Guidance</button>
+    <div class="search-container">
+      <div class="search-row">
+        <input
+          type="text"
+          id="query"
+          placeholder="Describe your situation... (e.g., 'I am feeling anxious about my future')"
+          autocomplete="off"
+        />
+        <button id="searchBtn">Seek Guidance</button>
+      </div>
+      <div class="options-row">
+        <select id="source" class="source-select" aria-label="Select guidance source">
+          <option value="both" selected>Both (AI + Sources)</option>
+          <option value="internal">Internal (AI Only)</option>
+          <option value="external">External (Sources Only)</option>
+        </select>
+        <select id="hadithCollection" class="hadith-collection-select" aria-label="Select Hadith collection">
+          <option value="Kutub_al_Sittah" selected>Kutub al-Sittah (6 Books)</option>
+          <option value="Sahihayn">Sahihayn (2 Books)</option>
+          <option value="Sunan_Arbaah">Sunan Arbaah (4 Books)</option>
+          <option value="Kutub_as_Sabiah">Kutub as-Sabiah (7 Books)</option>
+          <option value="Forty_Collections">Forty Collections (3 Books)</option>
+        </select>
+      </div>
     </div>
     <a href="settings.html" class="settings-link">Settings</a>
     <div id="status" class="status hidden"></div>

@@ -8,3 +8,9 @@ coverage/
 .vscode/
 .idea/
 api_responses/
+
+# Vercel
+.vercel
+.vercel/
+*.log
+logs/

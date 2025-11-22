@@ -13,6 +13,17 @@ const citationsDiv = document.getElementById('citations');
 const storedTheme = localStorage.getItem('theme') || 'light';
 document.documentElement.setAttribute('data-theme', storedTheme);
 
+// Dark Mode Toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+if (darkModeToggle) {
+  darkModeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  });
+}
+
 // Utility to show toast messages
 function showToast(message) {
   toastDiv.textContent = message;
@@ -34,6 +45,42 @@ function clearStatus() {
   statusDiv.classList.add('hidden');
 }
 
+// Hadith Collections Configuration
+const HADITH_COLLECTIONS = {
+  "Sahihayn": [
+    { "name": "Sahih al-Bukhari", "code": "eng-bukhari" },
+    { "name": "Sahih Muslim", "code": "eng-muslim" }
+  ],
+  "Sunan_Arbaah": [
+    { "name": "Sunan Abu Dawud", "code": "eng-abudawud" },
+    { "name": "Jami At-Tirmidhi", "code": "eng-tirmidhi" },
+    { "name": "Sunan an-Nasai", "code": "eng-nasai" },
+    { "name": "Sunan Ibn Majah", "code": "eng-ibnmajah" }
+  ],
+  "Kutub_al_Sittah": [
+    { "name": "Sahih al-Bukhari", "code": "eng-bukhari" },
+    { "name": "Sahih Muslim", "code": "eng-muslim" },
+    { "name": "Sunan Abu Dawud", "code": "eng-abudawud" },
+    { "name": "Jami At-Tirmidhi", "code": "eng-tirmidhi" },
+    { "name": "Sunan an-Nasai", "code": "eng-nasai" },
+    { "name": "Sunan Ibn Majah", "code": "eng-ibnmajah" }
+  ],
+  "Kutub_as_Sabiah": [
+    { "name": "Sahih al-Bukhari", "code": "eng-bukhari" },
+    { "name": "Sahih Muslim", "code": "eng-muslim" },
+    { "name": "Sunan Abu Dawud", "code": "eng-abudawud" },
+    { "name": "Jami At-Tirmidhi", "code": "eng-tirmidhi" },
+    { "name": "Sunan an-Nasai", "code": "eng-nasai" },
+    { "name": "Sunan Ibn Majah", "code": "eng-ibnmajah" },
+    { "name": "Muwatta Malik", "code": "eng-malik" }
+  ],
+  "Forty_Collections": [
+    { "name": "Forty Hadith Qudsi", "code": "eng-qudsi" },
+    { "name": "Forty Hadith Nawawi", "code": "eng-nawawi" },
+    { "name": "Forty Hadith of Shah Waliullah Dehlawi", "code": "eng-dehlawi" }
+  ]
+};
+
 // Validate input length
 function isValidInput(text) {
   return text && text.trim().length >= 10;
@@ -41,10 +88,14 @@ function isValidInput(text) {
 
 // Simulate progressive status updates while awaiting backend response
 function simulateLoadingStages(callback) {
+  const hadithCollectionKey = document.getElementById('hadithCollection').value;
+  const selectedHadithBooks = HADITH_COLLECTIONS[hadithCollectionKey] || [];
+  const bookNames = selectedHadithBooks.map(book => book.name).join(', ');
+  
   const stages = [
     'Understanding your problem...',
     'Searching Quran...',
-    'Consulting Hadith...'
+    `Consulting Hadith books (${bookNames})...`
   ];
   let index = 0;
   const interval = setInterval(() => {
@@ -72,20 +123,60 @@ async function logToServer(level, message) {
   }
 }
 
+// Helper to truncate long JSON for logging
+function truncateJSON(obj, maxLength = 150) {
+  if (typeof obj === 'string') {
+    return obj.length > maxLength ? obj.substring(0, maxLength) + `... [TRUNCATED ${obj.length - maxLength} chars]` : obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(item => truncateJSON(item, maxLength));
+  }
+  if (typeof obj === 'object' && obj !== null) {
+    const result = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = truncateJSON(value, maxLength);
+    }
+    return result;
+  }
+  return obj;
+}
+
 async function fetchGuidance(query) {
-  logToServer('info', `Fetching guidance for query: ${query}`);
+  const source = document.getElementById('source').value;
+  const hadithCollectionKey = document.getElementById('hadithCollection').value;
+  const selectedHadithBooks = HADITH_COLLECTIONS[hadithCollectionKey] || [];
+  const hadithCodes = selectedHadithBooks.map(book => book.code);
+  
+  logToServer('info', '='.repeat(80));
+  logToServer('info', '[USER ACTION] Starting guidance request');
+  logToServer('info', `[REQUEST] Query: "${query}"`);
+  logToServer('info', `[REQUEST] Source: ${source}`);
+  logToServer('info', `[REQUEST] Hadith Collection: ${hadithCollectionKey}`);
+  logToServer('info', `[REQUEST] Hadith Books: ${hadithCodes.join(', ')}`);
+  logToServer('info', '='.repeat(80));
+  
   try {
-    logToServer('info', 'Sending POST request to /api/guidance');
+    const requestBody = { 
+      query, 
+      source,
+      hadith_collection: hadithCodes
+    };
+    logToServer('info', `[API REQUEST] Sending POST to /api/guidance`);
+    logToServer('info', `[API REQUEST] Body: ${JSON.stringify(requestBody)}`);
+    
     const response = await fetch('/api/guidance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query })
+      body: JSON.stringify(requestBody)
     });
-    logToServer('info', `Response received. Status: ${response.status}`);
+    
+    logToServer('info', `[API RESPONSE] Status: ${response.status} ${response.statusText}`);
+    logToServer('info', `[API RESPONSE] Headers: ${JSON.stringify(Object.fromEntries(response.headers))}`);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
-      logToServer('error', `Server error: ${response.status} - ${JSON.stringify(errorData)}`);
+      logToServer('error', `[API ERROR] Status ${response.status}`);
+      logToServer('error', `[API ERROR] Response: ${JSON.stringify(errorData)}`);
       
       // Return structured error for different status codes
       if (response.status === 400) {
@@ -101,15 +192,35 @@ async function fetchGuidance(query) {
     }
 
     const data = await response.json();
-    logToServer('info', 'Data parsed successfully');
+    logToServer('info', '[API RESPONSE] Data parsed successfully');
+    
+    // Log truncated response for readability
+    const truncatedData = truncateJSON(data, 150);
+    logToServer('info', `[API RESPONSE] Data: ${JSON.stringify(truncatedData, null, 2)}`);
+    
+    // Log citations count if available
+    if (data.citations && Array.isArray(data.citations)) {
+      logToServer('info', `[API RESPONSE] Citations count: ${data.citations.length}`);
+      data.citations.forEach((citation, idx) => {
+        logToServer('info', `[CITATION ${idx + 1}] ${citation.title} - ${citation.url}`);
+      });
+    }
+    
+    logToServer('info', '[SUCCESS] Returning data to display');
+    logToServer('info', '='.repeat(80));
+    
     return data;
   } catch (err) {
-    logToServer('error', `Network error: ${err}`);
+    logToServer('error', `[NETWORK ERROR] ${err.message}`);
+    logToServer('error', `[NETWORK ERROR] Stack: ${err.stack}`);
+    logToServer('info', '='.repeat(80));
     return { error: 'Network error', message: 'Failed to connect to server. Please check if the server is running.' };
   }
 }
 
 function displayResult(data) {
+  logToServer('info', '[DISPLAY] Displaying results to user');
+  
   // Hide status
   clearStatus();
   // Show result section
@@ -117,6 +228,7 @@ function displayResult(data) {
   
   // Check if it's an error
   if (data.error) {
+    logToServer('error', `[DISPLAY] Showing error: ${data.error}`);
     answerDiv.innerHTML = `<div class="error-message">
       <strong>Error:</strong> ${data.message || data.error}
     </div>`;
@@ -124,11 +236,14 @@ function displayResult(data) {
     return;
   }
   
+  logToServer('info', `[DISPLAY] Answer length: ${(data.answer || '').length} characters`);
+  
   // Populate answer
   answerDiv.textContent = data.answer || '';
   // Populate citations if any
   citationsDiv.innerHTML = '';
   if (data.citations && data.citations.length) {
+    logToServer('info', `[DISPLAY] Displaying ${data.citations.length} citations`);
     const list = document.createElement('ul');
     data.citations.forEach((cite) => {
       const li = document.createElement('li');
@@ -141,15 +256,26 @@ function displayResult(data) {
       list.appendChild(li);
     });
     citationsDiv.appendChild(list);
+  } else {
+    logToServer('info', '[DISPLAY] No citations to display');
   }
+  
+  logToServer('info', '[DISPLAY] Results displayed successfully');
 }
 
 searchBtn.addEventListener('click', async () => {
   const query = queryInput.value;
+  
+  logToServer('info', '[USER ACTION] Search button clicked');
+  logToServer('info', `[VALIDATION] Query length: ${query.length} characters`);
+  
   if (!isValidInput(query)) {
+    logToServer('warning', '[VALIDATION] Query too short, showing toast');
     showToast('Please describe your situation in at least 10 characters.');
     return;
   }
+  
+  logToServer('info', '[VALIDATION] Input validated successfully');
 
   // Reset previous result
   resultSection.classList.add('hidden');
@@ -161,8 +287,10 @@ searchBtn.addEventListener('click', async () => {
     const data = await fetchGuidance(query);
     if (data.error) {
       if (data.error === 'Irrelevant problem') {
+        logToServer('warning', '[ERROR] Irrelevant problem detected');
         showToast("This doesn't seem to be a request for guidance. Please try describing a life situation.");
       } else {
+        logToServer('error', `[ERROR] Error occurred: ${data.error}`);
         showToast('An error occurred. Please try again later.');
       }
       clearStatus();
@@ -179,15 +307,4 @@ queryInput.addEventListener('keydown', (e) => {
     searchBtn.click();
   }
 });
-
-// Dark Mode Toggle
-const darkModeToggle = document.getElementById('darkModeToggle');
-if (darkModeToggle) {
-  darkModeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-  });
-}
 

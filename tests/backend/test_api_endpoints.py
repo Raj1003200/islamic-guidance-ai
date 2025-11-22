@@ -99,28 +99,49 @@ class TestAPIKeyEndpoints:
 class TestGuidanceEndpoint:
     """Tests for /api/guidance endpoint"""
     
-    def test_guidance_with_valid_query(self):
-        """Test with a valid question"""
+    def test_guidance_with_valid_query_internal(self):
+        """Test with valid query and internal source"""
         response = requests.post(f"{BASE_URL}/api/guidance",
-                               json={"query": "I am feeling anxious about my future career"},
+                               json={"query": "I am feeling anxious about my future", "source": "internal"},
                                timeout=30)
-        # Can be 200, 429 (quota), or 503 (no API key)
         assert response.status_code in [200, 429, 503]
         if response.status_code == 200:
             data = response.json()
-            # Should have either 'answer' or 'error'
-            assert "answer" in data or "error" in data
-    
+            assert "answer" in data
+
+    def test_guidance_with_valid_query_external(self):
+        """Test with valid query and external source"""
+        response = requests.post(f"{BASE_URL}/api/guidance",
+                               json={"query": "I want to learn about patience in Islam", "source": "external"},
+                               timeout=30)
+        assert response.status_code in [200, 429, 503]
+        if response.status_code == 200:
+            data = response.json()
+            assert "answer" in data
+            # External should ideally have citations if found
+            if "citations" in data:
+                assert isinstance(data["citations"], list)
+
+    def test_guidance_with_valid_query_both(self):
+        """Test with valid query and both sources"""
+        response = requests.post(f"{BASE_URL}/api/guidance",
+                               json={"query": "Tell me about the importance of prayer", "source": "both"},
+                               timeout=30)
+        assert response.status_code in [200, 429, 503]
+        if response.status_code == 200:
+            data = response.json()
+            assert "answer" in data
+
     def test_guidance_with_short_query(self):
         """Test with too short query"""
         response = requests.post(f"{BASE_URL}/api/guidance",
-                               json={"query": "hello"})
+                               json={"query": "hello", "source": "both"})
         assert response.status_code == 400
     
     def test_guidance_with_empty_query(self):
         """Test with empty query"""
         response = requests.post(f"{BASE_URL}/api/guidance",
-                               json={"query": ""})
+                               json={"query": "", "source": "both"})
         assert response.status_code == 400
     
     def test_guidance_with_invalid_request(self):
@@ -129,6 +150,23 @@ class TestGuidanceEndpoint:
                                json={"test": "test"})
         # Should handle missing 'query' field
         assert response.status_code in [400, 422]
+
+class TestSearchEndpoints:
+    """Tests for direct search endpoints"""
+
+    def test_quran_search(self):
+        """Test /api/quran/search"""
+        response = requests.get(f"{BASE_URL}/api/quran/search", params={"keyword": "patience"})
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+    
+    def test_hadith_search(self):
+        """Test /api/hadith/search"""
+        response = requests.get(f"{BASE_URL}/api/hadith/search", params={"topic": "prayer", "book": "muslim"})
+        assert response.status_code == 200
+        # Can be dict or null
+
 
 class TestStaticFiles:
     """Tests for static file serving"""

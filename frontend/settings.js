@@ -2,19 +2,19 @@
 
 const apiKeyInput = document.getElementById('apiKey');
 const saveBtn = document.getElementById('saveKeyBtn');
-const themeSwitch = document.getElementById('themeSwitch');
-const logDiv = document.getElementById('logOutput');
+const statusDiv = document.getElementById('statusMessage');
 const toggleVisibilityBtn = document.getElementById('toggleApiKeyVisibility');
 
-function log(message) {
-  console.log(message);
-  const p = document.createElement('p');
-  p.textContent = message;
-  logDiv.appendChild(p);
-  logDiv.classList.remove('hidden');
+function showStatus(message, isError = false) {
+  statusDiv.textContent = message;
+  statusDiv.classList.remove('hidden');
+  statusDiv.style.color = isError ? '#e74c3c' : '#27ae60';
+  setTimeout(() => {
+    statusDiv.classList.add('hidden');
+  }, 5000);
 }
 
-// Load stored API key (masked) and theme on page load
+// Load stored API key (masked) on page load
 window.addEventListener('DOMContentLoaded', async () => {
   // First try to load from backend .env
   try {
@@ -23,11 +23,10 @@ window.addEventListener('DOMContentLoaded', async () => {
       const data = await response.json();
       if (data.apiKey) {
         apiKeyInput.value = data.apiKey;
-        log('Loaded API key from server .env file.');
       }
     }
   } catch (err) {
-    log('Could not load API key from server.');
+    console.error('Could not load API key from server.');
   }
 
   // Fallback to localStorage
@@ -35,26 +34,19 @@ window.addEventListener('DOMContentLoaded', async () => {
     const storedKey = localStorage.getItem('geminiApiKey');
     if (storedKey) {
       apiKeyInput.value = storedKey;
-      log('Loaded saved API key from localStorage.');
     }
   }
-
-  const storedTheme = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', storedTheme);
-  themeSwitch.checked = storedTheme === 'dark';
-  log(`Applied stored theme: ${storedTheme}`);
 });
 
 saveBtn.addEventListener('click', async () => {
   const key = apiKeyInput.value.trim();
   if (key.length === 0) {
-    log('Attempted to save empty API key – ignored.');
+    showStatus('Please enter a valid API key.', true);
     return;
   }
   
   // Save to backend .env file
   try {
-    log('Saving API key to server...');
     const response = await fetch('/api/save-api-key', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,27 +54,17 @@ saveBtn.addEventListener('click', async () => {
     });
     
     if (response.ok) {
-      const data = await response.json();
-      log('✓ API key saved to .env file successfully!');
-      log('⚠ Please restart the server for changes to take effect.');
+      showStatus('API key saved successfully! Please restart the server.');
     } else {
       const error = await response.json();
-      log(`✗ Failed to save API key: ${error.detail}`);
+      showStatus(`Failed to save API key: ${error.detail}`, true);
     }
   } catch (err) {
-    log(`✗ Network error: ${err.message}`);
+    showStatus(`Network error: ${err.message}`, true);
   }
   
   // Also save to localStorage as backup
   localStorage.setItem('geminiApiKey', key);
-  log('✓ API key also saved to localStorage.');
-});
-
-themeSwitch.addEventListener('change', () => {
-  const newTheme = themeSwitch.checked ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  log(`Theme switched to ${newTheme}.`);
 });
 
 // Password visibility toggle

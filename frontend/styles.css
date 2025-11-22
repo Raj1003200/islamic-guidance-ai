@@ -39,16 +39,31 @@ h1 {
   color: #2c3e50;
 }
 
-.search-wrapper {
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.search-row {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.options-row {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
 #query {
   flex: 1;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
+  padding: 1rem 1.2rem; /* Bigger padding */
+  font-size: 1.1rem; /* Bigger font */
   border: 2px solid #bdc3c7;
   border-radius: 0.5rem;
   transition: border-color 0.2s;
@@ -60,14 +75,33 @@ h1 {
 }
 
 #searchBtn {
-  padding: 0.75rem 1.2rem;
-  font-size: 1rem;
+  padding: 1rem 1.5rem; /* Bigger button to match input */
+  font-size: 1.1rem;
   background: #3498db;
   color: #fff;
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.source-select,
+.hadith-collection-select {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: 2px solid #bdc3c7;
+  border-radius: 0.5rem;
+  background-color: white;
+  cursor: pointer;
+  min-width: 200px;
+  transition: border-color 0.2s;
+}
+
+.source-select:focus,
+.hadith-collection-select:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 #searchBtn:hover {
@@ -121,16 +155,16 @@ h1 {
 .hidden { display: none; }
 
 /* Settings page specific */
-.settings-panel, .theme-toggle {
+.settings-panel {
   margin: 1rem 0;
   text-align: left;
 }
-.settings-panel label, .theme-toggle label {
+.settings-panel label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
-.settings-panel input, .theme-toggle input {
+.settings-panel input {
   width: 100%;
   padding: 0.5rem;
   margin-bottom: 0.5rem;
@@ -155,6 +189,23 @@ h1 {
   text-decoration: underline;
 }
 
+.status-message {
+  margin-top: 1rem;
+  font-weight: bold;
+  padding: 0.5rem;
+  border-radius: 0.3rem;
+  background-color: rgba(255,255,255,0.8);
+}
+
+.error-message {
+  background-color: #fee;
+  border-left: 4px solid #e74c3c;
+  padding: 1rem;
+  color: #c0392b;
+  border-radius: 0.5rem;
+  margin: 0.5rem 0;
+}
+
 /* Dark/Light theme handling */
 html[data-theme='dark'] body {
   background: #1e1e1e;
@@ -175,6 +226,12 @@ html[data-theme='dark'] #query {
 html[data-theme='dark'] #searchBtn {
   background: #555;
 }
+html[data-theme='dark'] .source-select,
+html[data-theme='dark'] .hadith-collection-select {
+  background-color: #333;
+  color: #fff;
+  border-color: #555;
+}
 html[data-theme='dark'] .settings-panel button {
   background: #555;
 }
@@ -188,16 +245,6 @@ html[data-theme='dark'] .citations {
 html[data-theme='dark'] .citations a {
   color: #81d4fa;
 }
-
-.error-message {
-  background-color: #fee;
-  border-left: 4px solid #e74c3c;
-  padding: 1rem;
-  color: #c0392b;
-  border-radius: 0.5rem;
-  margin: 0.5rem 0;
-}
-
 html[data-theme='dark'] .error-message {
   background-color: #4a1a1a;
   border-left-color: #e74c3c;
