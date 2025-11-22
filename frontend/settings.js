@@ -1,9 +1,10 @@
-// settings.js – Handles API key storage, theme toggle, and logging
+// settings.js – Handles API key storage, theme selection, and logging
 
 const apiKeyInput = document.getElementById('apiKey');
 const saveBtn = document.getElementById('saveKeyBtn');
 const statusDiv = document.getElementById('statusMessage');
 const toggleVisibilityBtn = document.getElementById('toggleApiKeyVisibility');
+const themeSelect = document.getElementById('themeSelect');
 
 function showStatus(message, isError = false) {
   statusDiv.textContent = message;
@@ -12,6 +13,61 @@ function showStatus(message, isError = false) {
   setTimeout(() => {
     statusDiv.classList.add('hidden');
   }, 5000);
+}
+
+// Apply stored theme on load - Default to Traditional Islamic
+const storedTheme = localStorage.getItem('theme') || 'traditional';
+document.documentElement.setAttribute('data-theme', storedTheme);
+
+// Set theme selector value on page load
+if (themeSelect) {
+  // Make sure the dropdown reflects the current theme
+  themeSelect.value = storedTheme;
+  
+  themeSelect.addEventListener('change', (e) => {
+    const selectedTheme = e.target.value;
+    
+    // Apply theme immediately
+    document.documentElement.setAttribute('data-theme', selectedTheme);
+    
+    // Save preference
+    localStorage.setItem('theme', selectedTheme);
+    
+    showStatus(`Theme changed to ${e.target.selectedOptions[0].text}!`);
+  });
+}
+
+// Dark Mode Toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+if (darkModeToggle) {
+  const moonIcon = darkModeToggle.querySelector('.moon-icon');
+  const sunIcon = darkModeToggle.querySelector('.sun-icon');
+  
+  // Update icon based on current theme
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  if (currentTheme === 'dark') {
+    moonIcon.classList.add('hidden');
+    sunIcon.classList.remove('hidden');
+  }
+  
+  darkModeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? (localStorage.getItem('theme') || 'traditional') : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    
+    if (newTheme === 'dark') {
+      moonIcon.classList.add('hidden');
+      sunIcon.classList.remove('hidden');
+    } else {
+      moonIcon.classList.remove('hidden');
+      sunIcon.classList.add('hidden');
+      // Update theme selector to match
+      if (themeSelect) {
+        themeSelect.value = newTheme;
+      }
+    }
+  });
 }
 
 // Load stored API key (masked) on page load
@@ -85,4 +141,3 @@ if (toggleVisibilityBtn) {
     }
   });
 }
-

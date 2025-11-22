@@ -9,8 +9,8 @@ const resultSection = document.getElementById('result');
 const answerDiv = document.getElementById('answer');
 const citationsDiv = document.getElementById('citations');
 
-// Apply stored theme on load
-const storedTheme = localStorage.getItem('theme') || 'light';
+// Apply stored theme on load - Default to Traditional Islamic
+const storedTheme = localStorage.getItem('theme') || 'traditional';
 document.documentElement.setAttribute('data-theme', storedTheme);
 
 // Dark Mode Toggle

@@ -2,6 +2,10 @@
 
 An Islamic guidance application powered by Google's Gemini AI that provides compassionate, contextual Islamic advice based on Quran and Hadith.
 
+**Created by:** Haseeb Mir  
+**Email:** haseebmir.hm@gmail.com  
+**License:** MIT
+
 ## 🚀 Quick Start
 
 ### Local Development
@@ -87,57 +91,96 @@ MuslimGuideAI/
 └── .env.example             # Environment template
 ```
 
-## 🔑 Features
+## 🎨 UI/UX App Preview
 
-- **AI-Powered Guidance**: Uses Google Gemini 2.0 Flash for intelligent responses
-- **Quran Integration**: Searches and references relevant Quran verses
-- **Hadith Support**: Includes authentic Hadith citations from multiple collections
-- **Hadith Collection Selector**: Choose from predefined Hadith book collections:
-  - **Sahihayn** (2 books): Sahih al-Bukhari, Sahih Muslim
-  - **Sunan Arbaah** (4 books): Abu Dawud, Tirmidhi, Nasai, Ibn Majah
-  - **Kutub al-Sittah** (6 books): The Six Authentic Books
-  - **Kutub as-Sabiah** (7 books): The Seven Books (includes Muwatta Malik)
-  - **Forty Collections** (3 books): Qudsi, Nawawi, Dehlawi
-- **Three Search Modes**:
-  - Internal: AI's built-in knowledge
-  - External: Only Quran/Hadith sources
-  - Both: Combined approach
-- **Dark/Light Mode**: Toggle between themes for comfortable viewing
-- **Responsive UI**: Works on desktop and mobile
-- **Serverless**: Scalable deployment on Vercel
+### 🏠 Main Page
 
-## 🎨 UI/UX
+#### Traditional Islamic Theme (Default)
+![Main Page - Traditional Islamic Theme](screenshots/main_traditional.png)
 
-### Main Page
+**Features Highlighted:**
+- 🌙 **Dark Mode Toggle** - Fixed position in top-right corner
+- 📝 **Large Resizable Textarea** - 6 rows with vertical resize capability
+- 🎯 **Full-Width Button** - Prominent "GET GUIDANCE" action button below textarea
+- 🔍 **Source Selector** - Choose AI, External Sources, or Both
+- 📚 **Hadith Collection Selector** - Select from 5 collection groups
+- 🕌 **Traditional Aesthetics** - Warm beige tones with golden borders (#c9a961)
+- 🔗 **Settings Link** - Quick access to configuration
 
-The homeinterface features a clean, modern design with:
-- **Query Input**: Large textarea for describing your situation
-- **Source Selector**: Choose between AI knowledge, external sources, or both
-- **Hadith Collection Selector**: Select which Hadith books to consult
-- **Dark Mode Toggle**: Switch between light and dark themes
-- **Search Status**: Real-time feedback showing: "Understanding your problem...", "Searching Quran...", "Consulting Hadith books (Sahih al-Bukhari, Sahih Muslim)..."
-- **Results Display**: Formatted guidance with clickable citations
+---
 
-![Main Page](screenshots/main_page.png)
+### ⚙️ Settings Page
 
-### Settings Page
+#### Theme Selector & Configuration
+![Settings Page - Traditional Islamic Theme](screenshots/settings_traditional.png)
 
-Configure your API settings through an intuitive interface:
-- **API Key Management**: Securely save your Gemini API key
-- **Key Visibility Toggle**: Show/hide API key while entering
-- **Success/Error Feedback**: Clear status messages
-- **Back to Home**: Easy navigation
+**Settings Features:**
+- 🎨 **Theme Dropdown** - Select from 3 beautiful themes
+- 🔑 **API Key Management** - Securely configure Gemini API key
+- 👁️ **Password Toggle** - Show/hide API key visibility
+- 💾 **Save Button** - Apply and persist settings
+- 🌙 **Dark Mode Toggle** - Consistent across all pages
+- ⬅️ **Back to Home** - Easy navigation
 
-![Settings Page](screenshots/settings_page.png)
+**Available Themes:**
+1. **Traditional Islamic** (Default) - Beige/brown with serif fonts
+2. **Modern Blue** - Contemporary blue gradients
+3. **Minimal White** - Clean minimalist design
 
-### Key Features Showcase
+---
 
-- **Glassmorphism Design**: Modern frosted glass effect with subtle backdrop blur
-- **Smooth Animations**: Transitions and hover effects for enhanced UX
-- **Consultation Messages**: Dynamic status showing exactly which Hadith books are being searched
-- **Proper Citations**: Direct links to specific verses (quran.com) and Hadiths (sunnah.com)
-- **Responsive Layout**: Adapts seamlessly to different screen sizes
-- **Accessibility**: ARIA labels and keyboard navigation support
+### 🌈 Theme Variations
+
+#### Modern Blue Theme
+![Settings Page - Modern Blue Theme](screenshots/settings_modern.png)
+
+**Modern Blue Characteristics:**
+- 💙 Vibrant blue gradients
+- ✨ Glassmorphism design with frosted glass effect
+- 🔷 Clean, contemporary aesthetics
+- 📱 Modern sans-serif typography
+
+#### Minimal White Theme
+![Settings Page - Minimal White Theme](screenshots/settings_page.png)
+
+**Minimal White Characteristics:**
+- ⚪ Ultra-clean gray/white palette
+- 🎯 Minimalist Scandinavian design
+- 📏 Simple geometric elements
+- 💨 Lightweight and fast
+
+---
+
+### 🌙 Dark Mode
+
+![Dark Mode](screenshots/dark_mode.png)
+
+**Dark Mode Features:**
+- 🌑 **One-Click Toggle** - Instant theme switching
+- 👀 **Eye Comfort** - Reduces eye strain in low-light
+- 🔄 **Persistent** - Remembers your preference
+- 🎨 **Works with All Themes** - Compatible with all 3 color schemes
+- ⚡ **Smooth Transitions** - Elegant fade animations
+
+**Dark Mode Specs:**
+- Background: `#1e1e1e`
+- Cards: `rgba(0,0,0,0.6)`
+- Text: `#e0e0e0`
+- Inputs: `#333` with `#555` borders
+
+---
+
+### ✨ Key UI/UX Features
+
+- **🎨 Multiple Themes**: 3 distinct visual styles to choose from
+- **🌙 Dark Mode**: Toggle for comfortable viewing in any lighting
+- **📱 Responsive Design**: Adapts seamlessly to all screen sizes
+- **♿ Accessibility**: ARIA labels and keyboard navigation
+- **🎭 Smooth Animations**: Transitions and hover effects throughout
+- **🔗 Direct Citations**: Clickable links to Quran verses and Hadith sources
+- **💬 Dynamic Status Messages**: Real-time feedback during searches
+- **🎯 Intuitive Layout**: Logical flow from input to results
+- **🔍 Clear Typography**: Readable fonts optimized for each theme
 
 ## 🛠️ Technology Stack
 
@@ -196,8 +239,8 @@ Once running, visit:
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
-
-[Your License Here]
+MIT License
+Copyright (c) 2025 Haseeb Mir
 
 ## 🙏 Acknowledgments
 

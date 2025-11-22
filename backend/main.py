@@ -442,5 +442,7 @@ if not IS_SERVERLESS:
     app.mount("/", StaticFiles(directory=frontend_path, html=True), name="static")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
+    port = os.getenv("PORT", 8000)
+    print("Starting server...")
+    uvicorn.run(app, host="0.0.0.0", port=port)
+    print("Server started on http://localhost:" + port)

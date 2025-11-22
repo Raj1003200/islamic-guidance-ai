@@ -1,460 +1,393 @@
-2025-11-22T06:25:33.694Z - FRONTEND - INFO - Fetching guidance for query: I am jobless how to get the job (Source: internal)
-2025-11-22T06:25:33.709Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:25:39.753Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:25:39.759Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:25:55.210Z - FRONTEND - INFO - Fetching guidance for query: I am jobless how to get the job (Source: external)
-2025-11-22T06:25:55.212Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:26:02.248Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:26:02.252Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:26:17.243Z - FRONTEND - INFO - Fetching guidance for query: I am jobless how to get the job (Source: both)
-2025-11-22T06:26:17.246Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:26:26.289Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:26:26.292Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:26:39.997Z - FRONTEND - INFO - Fetching guidance for query: I am anxious right now what to do (Source: internal)
-2025-11-22T06:26:39.999Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:26:43.000Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:26:43.005Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:27:06.027Z - FRONTEND - INFO - Fetching guidance for query: I am anxious right now what to do (Source: external)
-2025-11-22T06:27:06.029Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:27:13.207Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:27:13.213Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:27:32.343Z - FRONTEND - INFO - Fetching guidance for query: I am anxious right now what to do (Source: both)
-2025-11-22T06:27:32.345Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:27:39.778Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:27:39.782Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:28:50.304Z - FRONTEND - INFO - Fetching guidance for query: i dont have a house (Source: external)
-2025-11-22T06:28:50.307Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:28:56.916Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:28:56.918Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:30:23.296Z - FRONTEND - INFO - Fetching guidance for query: how to go to france (Source: external)
-2025-11-22T06:30:23.297Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:30:30.706Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:30:30.707Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:30:48.824Z - FRONTEND - INFO - Fetching guidance for query: what is capital of france (Source: external)
-2025-11-22T06:30:48.826Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:30:53.342Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:30:53.344Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:31:20.557Z - FRONTEND - INFO - Fetching guidance for query: which muslim countries are best and clean (Source: both)
-2025-11-22T06:31:20.558Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:31:25.792Z - FRONTEND - INFO - Response received. Status: 500
-2025-11-22T06:31:25.793Z - FRONTEND - ERROR - Server error: 500 - {"detail":"Error generating guidance: 'str' object has no attribute 'get'"}
-2025-11-22T06:34:41.929Z - FRONTEND - INFO - Fetching guidance for query: how to get a halal income (Source: internal)
-2025-11-22T06:34:41.934Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:34:46.174Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:34:46.175Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:35:26.094Z - FRONTEND - INFO - Fetching guidance for query: how to get a halal house and i am sad (Source: external)
-2025-11-22T06:35:26.095Z - FRONTEND - INFO - Sending POST request to /api/guidance
-2025-11-22T06:35:32.832Z - FRONTEND - INFO - Response received. Status: 200
-2025-11-22T06:35:32.833Z - FRONTEND - INFO - Data parsed successfully
-2025-11-22T06:42:50.759Z - FRONTEND - INFO - [USER ACTION] Search button clicked
-2025-11-22T06:42:50.760Z - FRONTEND - INFO - [VALIDATION] Query length: 37 characters
-2025-11-22T06:42:50.760Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
-2025-11-22T06:42:54.376Z - FRONTEND - INFO - ================================================================================
-2025-11-22T06:42:54.377Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
-2025-11-22T06:42:54.378Z - FRONTEND - INFO - [REQUEST] Query: "how to get a halal house and i am sad"
-2025-11-22T06:42:54.378Z - FRONTEND - INFO - [REQUEST] Source: internal
-2025-11-22T06:42:54.378Z - FRONTEND - INFO - ================================================================================
-2025-11-22T06:42:54.379Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
-2025-11-22T06:42:54.379Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"how to get a halal house and i am sad","source":"internal"}
-2025-11-22T06:43:04.555Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
-2025-11-22T06:43:04.558Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
-2025-11-22T06:43:04.557Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"3200","content-type":"application/json","date":"Sat, 22 Nov 2025 06:42:53 GMT","server":"uvicorn"}
-2025-11-22T06:43:04.559Z - FRONTEND - INFO - [API RESPONSE] Data: {
-  "answer": "As-salamu alaykum (Peace be upon you). I understand that you're feeling sad while also trying to find a halal way to acquire a house. It's admirable t... [TRUNCATED 2573 chars]",
+2025-11-22T09:28:11.893Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T09:28:11.895Z - FRONTEND - INFO - [VALIDATION] Query length: 39 characters
+2025-11-22T09:28:11.895Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
+2025-11-22T09:28:15.507Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:28:15.507Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
+2025-11-22T09:28:15.508Z - FRONTEND - INFO - [REQUEST] Source: external
+2025-11-22T09:28:15.507Z - FRONTEND - INFO - [REQUEST] Query: "I have loan now please help me clear it"
+2025-11-22T09:28:15.508Z - FRONTEND - INFO - [REQUEST] Hadith Collection: Sahihayn
+2025-11-22T09:28:15.508Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:28:15.508Z - FRONTEND - INFO - [REQUEST] Hadith Books: eng-bukhari, eng-muslim
+2025-11-22T09:28:15.509Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
+2025-11-22T09:28:15.509Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"I have loan now please help me clear it","source":"external","hadith_collection":["eng-bukhari","eng-muslim"]}
+2025-11-22T09:28:32.347Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
+2025-11-22T09:28:32.348Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"2774","content-type":"application/json","date":"Sat, 22 Nov 2025 09:28:14 GMT","server":"uvicorn"}
+2025-11-22T09:28:32.351Z - FRONTEND - INFO - [API RESPONSE] Data: {
+  "answer": "Dealing with debt can be stressful, but Islam provides guidance and emphasizes seeking Allah's help. The Prophet Muhammad (peace and blessings be upon... [TRUNCATED 1122 chars]",
   "citations": [
     {
-      "reference": "Quran (12:86)",
-      "text": "He said, \"I only complain of my suffering and my grief to Allah, and I know from Allah that which you do not know.\""
+      "title": "Hadith (Bukhari) - Hadith 1498",
+      "url": "https://sunnah.com/bukhari:1498"
     },
     {
-      "reference": "General Islamic teachings on Riba",
-      "text": "The prohibition of riba (interest) is a fundamental principle of Islamic finance."
+      "title": "Hadith (Bukhari) - Hadith 2291",
+      "url": "https://sunnah.com/bukhari:2291"
     },
     {
-      "reference": "Islamic teachings on Du'a",
-      "text": "Du'a (supplication) is a powerful tool for seeking Allah's help and guidance."
+      "title": "Hadith (Muslim) - Hadith 3984",
+      "url": "https://sunnah.com/muslim:3984"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 3986",
+      "url": "https://sunnah.com/muslim:3986"
+    },
+    {
+      "title": "Hadith (Bukhari) - Hadith 457",
+      "url": "https://sunnah.com/bukhari:457"
+    },
+    {
+      "title": "Hadith (Bukhari) - Hadith 471",
+      "url": "https://sunnah.com/bukhari:471"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 1325",
+      "url": "https://sunnah.com/muslim:1325"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 1656",
+      "url": "https://sunnah.com/muslim:1656"
+    },
+    {
+      "title": "Hadith (Bukhari) - Hadith 2298",
+      "url": "https://sunnah.com/bukhari:2298"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 2302",
+      "url": "https://sunnah.com/muslim:2302"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 3994",
+      "url": "https://sunnah.com/muslim:3994"
+    },
+    {
+      "title": "Hadith (Bukhari) - Hadith 1787",
+      "url": "https://sunnah.com/bukhari:1787"
+    },
+    {
+      "title": "Hadith (Bukhari) - Hadith 2527",
+      "url": "https://sunnah.com/bukhari:2527"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 1629",
+      "url": "https://sunnah.com/muslim:1629"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 1630",
+      "url": "https://sunnah.com/muslim:1630"
+    },
+    {
+      "title": "Hadith (Bukhari) - Hadith 4418",
+      "url": "https://sunnah.com/bukhari:4418"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 288",
+      "url": "https://sunnah.com/muslim:288"
+    },
+    {
+      "title": "Hadith (Muslim) - Hadith 936",
+      "url": "https://sunnah.com/muslim:936"
     }
   ]
 }
-2025-11-22T06:43:04.559Z - FRONTEND - INFO - [CITATION 1] undefined - undefined
-2025-11-22T06:43:04.559Z - FRONTEND - INFO - [API RESPONSE] Citations count: 3
-2025-11-22T06:43:04.560Z - FRONTEND - INFO - [CITATION 2] undefined - undefined
-2025-11-22T06:43:04.561Z - FRONTEND - INFO - [SUCCESS] Returning data to display
-2025-11-22T06:43:04.560Z - FRONTEND - INFO - [CITATION 3] undefined - undefined
-2025-11-22T06:43:04.561Z - FRONTEND - INFO - ================================================================================
-2025-11-22T06:43:04.562Z - FRONTEND - INFO - [DISPLAY] Answer length: 2723 characters
-2025-11-22T06:43:04.562Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
-2025-11-22T06:43:04.563Z - FRONTEND - INFO - [DISPLAY] Displaying 3 citations
-2025-11-22T06:43:04.563Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
-2025-11-22T06:43:55.579Z - FRONTEND - INFO - [USER ACTION] Search button clicked
-2025-11-22T06:43:55.580Z - FRONTEND - INFO - [VALIDATION] Query length: 33 characters
-2025-11-22T06:43:55.580Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
-2025-11-22T06:43:59.183Z - FRONTEND - INFO - ================================================================================
-2025-11-22T06:43:59.184Z - FRONTEND - INFO - [REQUEST] Query: "i cannot find a good life partner"
-2025-11-22T06:43:59.184Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
-2025-11-22T06:43:59.185Z - FRONTEND - INFO - ================================================================================
-2025-11-22T06:43:59.185Z - FRONTEND - INFO - [REQUEST] Source: external
-2025-11-22T06:43:59.186Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"i cannot find a good life partner","source":"external"}
-2025-11-22T06:43:59.185Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
-2025-11-22T06:44:04.448Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
-2025-11-22T06:44:04.449Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"505","content-type":"application/json","date":"Sat, 22 Nov 2025 06:43:58 GMT","server":"uvicorn"}
-2025-11-22T06:44:04.450Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
-2025-11-22T06:44:04.451Z - FRONTEND - INFO - [API RESPONSE] Data: {
-  "answer": "While I don't have specific guidance on finding a life partner directly from the provided text, remember that fulfilling your religious obligations, s... [TRUNCATED 274 chars]",
+2025-11-22T09:28:32.349Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
+2025-11-22T09:28:32.352Z - FRONTEND - INFO - [API RESPONSE] Citations count: 18
+2025-11-22T09:28:32.352Z - FRONTEND - INFO - [CITATION 1] Hadith (Bukhari) - Hadith 1498 - https://sunnah.com/bukhari:1498
+2025-11-22T09:28:32.353Z - FRONTEND - INFO - [CITATION 2] Hadith (Bukhari) - Hadith 2291 - https://sunnah.com/bukhari:2291
+2025-11-22T09:28:32.354Z - FRONTEND - INFO - [CITATION 3] Hadith (Muslim) - Hadith 3984 - https://sunnah.com/muslim:3984
+2025-11-22T09:28:32.355Z - FRONTEND - INFO - [CITATION 5] Hadith (Bukhari) - Hadith 457 - https://sunnah.com/bukhari:457
+2025-11-22T09:28:32.354Z - FRONTEND - INFO - [CITATION 4] Hadith (Muslim) - Hadith 3986 - https://sunnah.com/muslim:3986
+2025-11-22T09:28:32.355Z - FRONTEND - INFO - [CITATION 6] Hadith (Bukhari) - Hadith 471 - https://sunnah.com/bukhari:471
+2025-11-22T09:28:32.356Z - FRONTEND - INFO - [CITATION 8] Hadith (Muslim) - Hadith 1656 - https://sunnah.com/muslim:1656
+2025-11-22T09:28:32.355Z - FRONTEND - INFO - [CITATION 7] Hadith (Muslim) - Hadith 1325 - https://sunnah.com/muslim:1325
+2025-11-22T09:28:32.357Z - FRONTEND - INFO - [CITATION 9] Hadith (Bukhari) - Hadith 2298 - https://sunnah.com/bukhari:2298
+2025-11-22T09:28:32.358Z - FRONTEND - INFO - [CITATION 11] Hadith (Muslim) - Hadith 3994 - https://sunnah.com/muslim:3994
+2025-11-22T09:28:32.357Z - FRONTEND - INFO - [CITATION 10] Hadith (Muslim) - Hadith 2302 - https://sunnah.com/muslim:2302
+2025-11-22T09:28:32.359Z - FRONTEND - INFO - [CITATION 12] Hadith (Bukhari) - Hadith 1787 - https://sunnah.com/bukhari:1787
+2025-11-22T09:28:32.360Z - FRONTEND - INFO - [CITATION 14] Hadith (Muslim) - Hadith 1629 - https://sunnah.com/muslim:1629
+2025-11-22T09:28:32.361Z - FRONTEND - INFO - [CITATION 15] Hadith (Muslim) - Hadith 1630 - https://sunnah.com/muslim:1630
+2025-11-22T09:28:32.360Z - FRONTEND - INFO - [CITATION 13] Hadith (Bukhari) - Hadith 2527 - https://sunnah.com/bukhari:2527
+2025-11-22T09:28:32.362Z - FRONTEND - INFO - [CITATION 16] Hadith (Bukhari) - Hadith 4418 - https://sunnah.com/bukhari:4418
+2025-11-22T09:28:32.363Z - FRONTEND - INFO - [CITATION 17] Hadith (Muslim) - Hadith 288 - https://sunnah.com/muslim:288
+2025-11-22T09:28:32.363Z - FRONTEND - INFO - [CITATION 18] Hadith (Muslim) - Hadith 936 - https://sunnah.com/muslim:936
+2025-11-22T09:28:32.365Z - FRONTEND - INFO - [SUCCESS] Returning data to display
+2025-11-22T09:28:32.366Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:28:32.367Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
+2025-11-22T09:28:32.368Z - FRONTEND - INFO - [DISPLAY] Answer length: 1272 characters
+2025-11-22T09:28:32.369Z - FRONTEND - INFO - [DISPLAY] Displaying 18 citations
+2025-11-22T09:28:32.370Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
+2025-11-22T09:34:45.063Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T09:34:45.064Z - FRONTEND - INFO - [VALIDATION] Query length: 6 characters
+2025-11-22T09:34:45.064Z - FRONTEND - WARNING - [VALIDATION] Query too short, showing toast
+2025-11-22T09:34:48.478Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T09:34:48.479Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
+2025-11-22T09:34:48.479Z - FRONTEND - INFO - [VALIDATION] Query length: 24 characters
+2025-11-22T09:34:52.087Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:34:52.088Z - FRONTEND - INFO - [REQUEST] Query: "sadsadsadsadsadsadsadsad"
+2025-11-22T09:34:52.087Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
+2025-11-22T09:34:52.088Z - FRONTEND - INFO - [REQUEST] Hadith Collection: Sahihayn
+2025-11-22T09:34:52.088Z - FRONTEND - INFO - [REQUEST] Source: both
+2025-11-22T09:34:52.089Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:34:52.089Z - FRONTEND - INFO - [REQUEST] Hadith Books: eng-bukhari, eng-muslim
+2025-11-22T09:34:52.089Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"sadsadsadsadsadsadsadsad","source":"both","hadith_collection":["eng-bukhari","eng-muslim"]}
+2025-11-22T09:34:52.089Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
+2025-11-22T09:35:00.113Z - FRONTEND - INFO - [API RESPONSE] Status: 500 Internal Server Error
+2025-11-22T09:35:00.114Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"75","content-type":"application/json","date":"Sat, 22 Nov 2025 09:34:51 GMT","server":"uvicorn"}
+2025-11-22T09:35:00.115Z - FRONTEND - ERROR - [API ERROR] Status 500
+2025-11-22T09:35:00.115Z - FRONTEND - ERROR - [API ERROR] Response: {"detail":"Error generating guidance: 'str' object has no attribute 'get'"}
+2025-11-22T09:35:00.115Z - FRONTEND - ERROR - [ERROR] Error occurred: Server error
+2025-11-22T09:35:33.369Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T09:35:33.370Z - FRONTEND - INFO - [VALIDATION] Query length: 37 characters
+2025-11-22T09:35:33.370Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
+2025-11-22T09:35:36.972Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:35:36.972Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
+2025-11-22T09:35:36.972Z - FRONTEND - INFO - [REQUEST] Query: "which country has best banking system"
+2025-11-22T09:35:36.973Z - FRONTEND - INFO - [REQUEST] Hadith Collection: Sahihayn
+2025-11-22T09:35:36.973Z - FRONTEND - INFO - [REQUEST] Source: internal
+2025-11-22T09:35:36.973Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:35:36.973Z - FRONTEND - INFO - [REQUEST] Hadith Books: eng-bukhari, eng-muslim
+2025-11-22T09:35:36.974Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
+2025-11-22T09:35:36.974Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"which country has best banking system","source":"internal","hadith_collection":["eng-bukhari","eng-muslim"]}
+2025-11-22T09:35:37.953Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
+2025-11-22T09:35:37.953Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"30","content-type":"application/json","date":"Sat, 22 Nov 2025 09:35:36 GMT","server":"uvicorn"}
+2025-11-22T09:35:37.954Z - FRONTEND - INFO - [API RESPONSE] Data: {
+  "error": "Irrelevant problem"
+}
+2025-11-22T09:35:37.955Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:35:37.955Z - FRONTEND - INFO - [SUCCESS] Returning data to display
+2025-11-22T09:35:37.954Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
+2025-11-22T09:35:37.955Z - FRONTEND - WARNING - [ERROR] Irrelevant problem detected
+2025-11-22T09:43:23.706Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T09:43:23.710Z - FRONTEND - INFO - [VALIDATION] Query length: 0 characters
+2025-11-22T09:43:23.710Z - FRONTEND - WARNING - [VALIDATION] Query too short, showing toast
+2025-11-22T09:49:18.857Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T09:49:18.858Z - FRONTEND - INFO - [VALIDATION] Query length: 0 characters
+2025-11-22T09:49:18.859Z - FRONTEND - WARNING - [VALIDATION] Query too short, showing toast
+2025-11-22T09:56:17.214Z - FRONTEND - INFO - [VALIDATION] Query length: 28 characters
+2025-11-22T09:56:17.214Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
+2025-11-22T09:56:17.206Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T09:56:20.827Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:56:20.828Z - FRONTEND - INFO - [REQUEST] Query: "I am feeling sad and anxious"
+2025-11-22T09:56:20.828Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
+2025-11-22T09:56:20.828Z - FRONTEND - INFO - [REQUEST] Source: internal
+2025-11-22T09:56:20.829Z - FRONTEND - INFO - [REQUEST] Hadith Books: eng-bukhari, eng-muslim
+2025-11-22T09:56:20.829Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:56:20.829Z - FRONTEND - INFO - [REQUEST] Hadith Collection: Sahihayn
+2025-11-22T09:56:20.829Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
+2025-11-22T09:56:20.830Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"I am feeling sad and anxious","source":"internal","hadith_collection":["eng-bukhari","eng-muslim"]}
+2025-11-22T09:56:27.875Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
+2025-11-22T09:56:27.879Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
+2025-11-22T09:56:27.877Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"3783","content-type":"application/json","date":"Sat, 22 Nov 2025 09:56:20 GMT","server":"uvicorn"}
+2025-11-22T09:56:27.881Z - FRONTEND - INFO - [API RESPONSE] Citations count: 4
+2025-11-22T09:56:27.880Z - FRONTEND - INFO - [API RESPONSE] Data: {
+  "answer": "Assalamu'alaikum. I'm truly sorry to hear that you're feeling sad and anxious. It's important to remember that feeling down or worried is a normal par... [TRUNCATED 3518 chars]",
   "citations": [
-    {
-      "title": "Hadith Source",
-      "url": "https://sunnah.com/"
-    }
+    "Quran 21:87",
+    "Quran 13:28",
+    "Sahih al-Bukhari",
+    "Quran 65:3"
   ]
 }
-2025-11-22T06:44:04.451Z - FRONTEND - INFO - [API RESPONSE] Citations count: 1
-2025-11-22T06:44:04.452Z - FRONTEND - INFO - [SUCCESS] Returning data to display
-2025-11-22T06:44:04.452Z - FRONTEND - INFO - [CITATION 1] Hadith Source - https://sunnah.com/
-2025-11-22T06:44:04.452Z - FRONTEND - INFO - ================================================================================
-2025-11-22T06:44:04.453Z - FRONTEND - INFO - [DISPLAY] Answer length: 424 characters
-2025-11-22T06:44:04.453Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
-2025-11-22T06:44:04.454Z - FRONTEND - INFO - [DISPLAY] Displaying 1 citations
-2025-11-22T06:44:04.455Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
-2025-11-22T07:01:53.109Z - FRONTEND - INFO - [USER ACTION] Search button clicked
-2025-11-22T07:01:53.122Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
-2025-11-22T07:01:53.121Z - FRONTEND - INFO - [VALIDATION] Query length: 33 characters
-2025-11-22T07:01:56.738Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:01:56.739Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
-2025-11-22T07:01:56.740Z - FRONTEND - INFO - [REQUEST] Source: external
-2025-11-22T07:01:56.740Z - FRONTEND - INFO - [REQUEST] Query: "i cannot find a good life partner"
-2025-11-22T07:01:56.740Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:01:56.741Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
-2025-11-22T07:01:56.741Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"i cannot find a good life partner","source":"external"}
-2025-11-22T07:02:02.163Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
-2025-11-22T07:02:02.166Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"521","content-type":"application/json","date":"Sat, 22 Nov 2025 07:01:55 GMT","server":"uvicorn"}
-2025-11-22T07:02:02.167Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
-2025-11-22T07:02:02.169Z - FRONTEND - INFO - [API RESPONSE] Data: {
-  "answer": "While I don't have specific guidance on finding a life partner in the provided text, remember to focus on your relationship with Allah (SWT). The hadi... [TRUNCATED 290 chars]",
+2025-11-22T09:56:27.881Z - FRONTEND - INFO - [CITATION 2] undefined - undefined
+2025-11-22T09:56:27.881Z - FRONTEND - INFO - [CITATION 1] undefined - undefined
+2025-11-22T09:56:27.882Z - FRONTEND - INFO - [CITATION 4] undefined - undefined
+2025-11-22T09:56:27.882Z - FRONTEND - INFO - [CITATION 3] undefined - undefined
+2025-11-22T09:56:27.883Z - FRONTEND - INFO - [SUCCESS] Returning data to display
+2025-11-22T09:56:27.883Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:56:27.886Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
+2025-11-22T09:56:27.887Z - FRONTEND - INFO - [DISPLAY] Answer length: 3668 characters
+2025-11-22T09:56:27.888Z - FRONTEND - INFO - [DISPLAY] Displaying 4 citations
+2025-11-22T09:56:27.889Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
+2025-11-22T09:56:45.474Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T09:56:45.475Z - FRONTEND - INFO - [VALIDATION] Query length: 28 characters
+2025-11-22T09:56:45.475Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
+2025-11-22T09:56:49.076Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:56:49.077Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
+2025-11-22T09:56:49.078Z - FRONTEND - INFO - [REQUEST] Query: "I am feeling sad and anxious"
+2025-11-22T09:56:49.078Z - FRONTEND - INFO - [REQUEST] Source: external
+2025-11-22T09:56:49.079Z - FRONTEND - INFO - [REQUEST] Hadith Collection: Sahihayn
+2025-11-22T09:56:49.079Z - FRONTEND - INFO - [REQUEST] Hadith Books: eng-bukhari, eng-muslim
+2025-11-22T09:56:49.080Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
+2025-11-22T09:56:49.079Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:56:49.080Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"I am feeling sad and anxious","source":"external","hadith_collection":["eng-bukhari","eng-muslim"]}
+2025-11-22T09:57:17.633Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
+2025-11-22T09:57:17.634Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"4724","content-type":"application/json","date":"Sat, 22 Nov 2025 09:56:48 GMT","server":"uvicorn"}
+2025-11-22T09:57:17.636Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
+2025-11-22T09:57:17.638Z - FRONTEND - INFO - [API RESPONSE] Data: {
+  "answer": "Feeling sad and anxious is a difficult experience, but Islam provides guidance and comfort during such times. The Prophet Muhammad (ﷺ) himself experie... [TRUNCATED 2339 chars]",
   "citations": [
     {
-      "title": "Hadith Source",
-      "url": "https://sunnah.com/"
-    }
-  ]
-}
-2025-11-22T07:02:02.169Z - FRONTEND - INFO - [CITATION 1] Hadith Source - https://sunnah.com/
-2025-11-22T07:02:02.169Z - FRONTEND - INFO - [API RESPONSE] Citations count: 1
-2025-11-22T07:02:02.170Z - FRONTEND - INFO - [SUCCESS] Returning data to display
-2025-11-22T07:02:02.170Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:02:02.170Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
-2025-11-22T07:02:02.171Z - FRONTEND - INFO - [DISPLAY] Answer length: 440 characters
-2025-11-22T07:02:02.172Z - FRONTEND - INFO - [DISPLAY] Displaying 1 citations
-2025-11-22T07:02:02.173Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
-2025-11-22T07:11:27.992Z - FRONTEND - INFO - [USER ACTION] Search button clicked
-2025-11-22T07:11:27.993Z - FRONTEND - INFO - [VALIDATION] Query length: 17 characters
-2025-11-22T07:11:27.994Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
-2025-11-22T07:11:31.600Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:11:31.601Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
-2025-11-22T07:11:31.601Z - FRONTEND - INFO - [REQUEST] Query: "good life-partner"
-2025-11-22T07:11:31.602Z - FRONTEND - INFO - [REQUEST] Source: external
-2025-11-22T07:11:31.602Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:11:31.603Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
-2025-11-22T07:11:31.603Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"good life-partner","source":"external"}
-2025-11-22T07:11:37.352Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
-2025-11-22T07:11:37.353Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"647","content-type":"application/json","date":"Sat, 22 Nov 2025 07:11:30 GMT","server":"uvicorn"}
-2025-11-22T07:11:37.354Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
-2025-11-22T07:11:37.355Z - FRONTEND - INFO - [API RESPONSE] Citations count: 1
-2025-11-22T07:11:37.354Z - FRONTEND - INFO - [API RESPONSE] Data: {
-  "answer": "Seeking a good life partner is a significant step, and in Islam, we are encouraged to prioritize faith and love in our relationships. The hadith remin... [TRUNCATED 416 chars]",
-  "citations": [
-    {
-      "title": "Hadith Source",
-      "url": "https://sunnah.com/"
-    }
-  ]
-}
-2025-11-22T07:11:37.355Z - FRONTEND - INFO - [SUCCESS] Returning data to display
-2025-11-22T07:11:37.355Z - FRONTEND - INFO - [CITATION 1] Hadith Source - https://sunnah.com/
-2025-11-22T07:11:37.356Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
-2025-11-22T07:11:37.356Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:11:37.357Z - FRONTEND - INFO - [DISPLAY] Displaying 1 citations
-2025-11-22T07:11:37.356Z - FRONTEND - INFO - [DISPLAY] Answer length: 566 characters
-2025-11-22T07:11:37.357Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
-2025-11-22T07:42:03.153Z - FRONTEND - INFO - [USER ACTION] Search button clicked
-2025-11-22T07:42:03.155Z - FRONTEND - INFO - [VALIDATION] Query length: 28 characters
-2025-11-22T07:42:03.156Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
-2025-11-22T07:42:06.761Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:42:06.762Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
-2025-11-22T07:42:06.762Z - FRONTEND - INFO - [REQUEST] Query: "How to get good life partner"
-2025-11-22T07:42:06.762Z - FRONTEND - INFO - [REQUEST] Source: external
-2025-11-22T07:42:06.763Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:42:06.763Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
-2025-11-22T07:42:06.763Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"How to get good life partner","source":"external"}
-2025-11-22T07:42:58.103Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
-2025-11-22T07:42:58.106Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"6210","content-type":"application/json","date":"Sat, 22 Nov 2025 07:42:06 GMT","server":"uvicorn"}
-2025-11-22T07:42:58.109Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
-2025-11-22T07:42:58.114Z - FRONTEND - INFO - [API RESPONSE] Citations count: 43
-2025-11-22T07:42:58.112Z - FRONTEND - INFO - [API RESPONSE] Data: {
-  "answer": "Seeking a good life partner is a significant aspect of life. While the hadiths provided don't directly address a specific method, they offer guidance ... [TRUNCATED 2529 chars]",
-  "citations": [
-    {
-      "title": "Hadith (Bukhari) - Hadith 14",
-      "url": "https://sunnah.com/bukhari:14"
+      "title": "Hadith (Bukhari) - Hadith 3",
+      "url": "https://sunnah.com/bukhari:3"
     },
     {
-      "title": "Hadith (Bukhari) - Hadith 22",
-      "url": "https://sunnah.com/bukhari:22"
+      "title": "Hadith (Bukhari) - Hadith 7",
+      "url": "https://sunnah.com/bukhari:7"
     },
     {
-      "title": "Hadith (Muslim) - Hadith 107",
-      "url": "https://sunnah.com/muslim:107"
+      "title": "Hadith (Muslim) - Hadith 143",
+      "url": "https://sunnah.com/muslim:143"
     },
     {
-      "title": "Hadith (Muslim) - Hadith 124",
-      "url": "https://sunnah.com/muslim:124"
+      "title": "Hadith (Muslim) - Hadith 310",
+      "url": "https://sunnah.com/muslim:310"
     },
     {
-      "title": "Hadith (Abudawud) - Hadith 36",
-      "url": "https://sunnah.com/abudawud:36"
+      "title": "Hadith (Bukhari) - Hadith 3591",
+      "url": "https://sunnah.com/bukhari:3591"
     },
     {
-      "title": "Hadith (Abudawud) - Hadith 80",
-      "url": "https://sunnah.com/abudawud:80"
+      "title": "Hadith (Bukhari) - Hadith 3774",
+      "url": "https://sunnah.com/bukhari:3774"
     },
     {
-      "title": "Hadith (Tirmidhi) - Hadith 480",
-      "url": "https://sunnah.com/tirmidhi:480"
+      "title": "Hadith (Muslim) - Hadith 2766",
+      "url": "https://sunnah.com/muslim:2766"
     },
     {
-      "title": "Hadith (Tirmidhi) - Hadith 1018",
-      "url": "https://sunnah.com/tirmidhi:1018"
+      "title": "Hadith (Muslim) - Hadith 2951",
+      "url": "https://sunnah.com/muslim:2951"
     },
     {
-      "title": "Hadith (Nasai) - Hadith 913",
-      "url": "https://sunnah.com/nasai:913"
+      "title": "Hadith (Bukhari) - Hadith 3623",
+      "url": "https://sunnah.com/bukhari:3623"
     },
     {
-      "title": "Hadith (Nasai) - Hadith 938",
-      "url": "https://sunnah.com/nasai:938"
+      "title": "Hadith (Bukhari) - Hadith 3624",
+      "url": "https://sunnah.com/bukhari:3624"
     },
     {
-      "title": "Hadith (Ibnmajah) - Hadith 46",
-      "url": "https://sunnah.com/ibnmajah:46"
+      "title": "Hadith (Bukhari) - Hadith 1034",
+      "url": "https://sunnah.com/bukhari:1034"
     },
     {
-      "title": "Hadith (Ibnmajah) - Hadith 76",
-      "url": "https://sunnah.com/ibnmajah:76"
+      "title": "Hadith (Muslim) - Hadith 147",
+      "url": "https://sunnah.com/muslim:147"
     },
     {
-      "title": "Hadith (Bukhari) - Hadith 18",
-      "url": "https://sunnah.com/bukhari:18"
+      "title": "Hadith (Muslim) - Hadith 480",
+      "url": "https://sunnah.com/muslim:480"
     },
     {
-      "title": "Hadith (Bukhari) - Hadith 614",
-      "url": "https://sunnah.com/bukhari:614"
+      "title": "Hadith (Bukhari) - Hadith 2661",
+      "url": "https://sunnah.com/bukhari:2661"
     },
     {
-      "title": "Hadith (Muslim) - Hadith 257",
-      "url": "https://sunnah.com/muslim:257"
+      "title": "Hadith (Bukhari) - Hadith 3129",
+      "url": "https://sunnah.com/bukhari:3129"
     },
     {
-      "title": "Hadith (Muslim) - Hadith 258",
-      "url": "https://sunnah.com/muslim:258"
+      "title": "Hadith (Muslim) - Hadith 6568",
+      "url": "https://sunnah.com/muslim:6568"
     },
     {
-      "title": "Hadith (Abudawud) - Hadith 525",
-      "url": "https://sunnah.com/abudawud:525"
+      "title": "Hadith (Muslim) - Hadith 7021",
+      "url": "https://sunnah.com/muslim:7021"
     },
     {
-      "title": "Hadith (Abudawud) - Hadith 760",
-      "url": "https://sunnah.com/abudawud:760"
-    },
-    {
-      "title": "Hadith (Tirmidhi) - Hadith 55",
-      "url": "https://sunnah.com/tirmidhi:55"
-    },
-    {
-      "title": "Hadith (Tirmidhi) - Hadith 113",
-      "url": "https://sunnah.com/tirmidhi:113"
-    },
-    {
-      "title": "Hadith (Nasai) - Hadith 679",
-      "url": "https://sunnah.com/nasai:679"
-    },
-    {
-      "title": "Hadith (Nasai) - Hadith 896",
-      "url": "https://sunnah.com/nasai:896"
-    },
-    {
-      "title": "Hadith (Ibnmajah) - Hadith 28",
-      "url": "https://sunnah.com/ibnmajah:28"
-    },
-    {
-      "title": "Hadith (Ibnmajah) - Hadith 70",
-      "url": "https://sunnah.com/ibnmajah:70"
+      "title": "Hadith (Bukhari) - Hadith 226",
+      "url": "https://sunnah.com/bukhari:226"
     },
     {
       "title": "Hadith (Bukhari) - Hadith 371",
       "url": "https://sunnah.com/bukhari:371"
     },
     {
-      "title": "Hadith (Bukhari) - Hadith 1837",
-      "url": "https://sunnah.com/bukhari:1837"
+      "title": "Hadith (Muslim) - Hadith 93",
+      "url": "https://sunnah.com/muslim:93"
     },
     {
-      "title": "Hadith (Muslim) - Hadith 2126",
-      "url": "https://sunnah.com/muslim:2126"
+      "title": "Hadith (Muslim) - Hadith 120",
+      "url": "https://sunnah.com/muslim:120"
     },
     {
-      "title": "Hadith (Muslim) - Hadith 2481",
-      "url": "https://sunnah.com/muslim:2481"
+      "title": "Hadith (Bukhari) - Hadith 1304",
+      "url": "https://sunnah.com/bukhari:1304"
     },
     {
-      "title": "Hadith (Abudawud) - Hadith 1841",
-      "url": "https://sunnah.com/abudawud:1841"
+      "title": "Hadith (Bukhari) - Hadith 4906",
+      "url": "https://sunnah.com/bukhari:4906"
     },
     {
-      "title": "Hadith (Abudawud) - Hadith 1845",
-      "url": "https://sunnah.com/abudawud:1845"
+      "title": "Hadith (Muslim) - Hadith 287",
+      "url": "https://sunnah.com/muslim:287"
     },
     {
-      "title": "Hadith (Tirmidhi) - Hadith 171",
-      "url": "https://sunnah.com/tirmidhi:171"
+      "title": "Hadith (Muslim) - Hadith 288",
+      "url": "https://sunnah.com/muslim:288"
     },
     {
-      "title": "Hadith (Tirmidhi) - Hadith 1075",
-      "url": "https://sunnah.com/tirmidhi:1075"
+      "title": "Hadith (Bukhari) - Hadith 2573",
+      "url": "https://sunnah.com/bukhari:2573"
     },
     {
-      "title": "Hadith (Nasai) - Hadith 75",
-      "url": "https://sunnah.com/nasai:75"
-    },
-    {
-      "title": "Hadith (Nasai) - Hadith 2842",
-      "url": "https://sunnah.com/nasai:2842"
-    },
-    {
-      "title": "Hadith (Ibnmajah) - Hadith 1846",
-      "url": "https://sunnah.com/ibnmajah:1846"
-    },
-    {
-      "title": "Hadith (Ibnmajah) - Hadith 1847",
-      "url": "https://sunnah.com/ibnmajah:1847"
-    },
-    {
-      "title": "Hadith (Bukhari) - Hadith 4746",
-      "url": "https://sunnah.com/bukhari:4746"
-    },
-    {
-      "title": "Hadith (Muslim) - Hadith 241",
-      "url": "https://sunnah.com/muslim:241"
-    },
-    {
-      "title": "Hadith (Muslim) - Hadith 454",
-      "url": "https://sunnah.com/muslim:454"
-    },
-    {
-      "title": "Hadith (Abudawud) - Hadith 2237",
-      "url": "https://sunnah.com/abudawud:2237"
-    },
-    {
-      "title": "Hadith (Abudawud) - Hadith 2248",
-      "url": "https://sunnah.com/abudawud:2248"
-    },
-    {
-      "title": "Hadith (Nasai) - Hadith 1983",
-      "url": "https://sunnah.com/nasai:1983"
-    },
-    {
-      "title": "Hadith (Ibnmajah) - Hadith 374",
-      "url": "https://sunnah.com/ibnmajah:374"
+      "title": "Hadith (Bukhari) - Hadith 2596",
+      "url": "https://sunnah.com/bukhari:2596"
     }
   ]
 }
-2025-11-22T07:42:58.115Z - FRONTEND - INFO - [CITATION 1] Hadith (Bukhari) - Hadith 14 - https://sunnah.com/bukhari:14
-2025-11-22T07:42:58.116Z - FRONTEND - INFO - [CITATION 2] Hadith (Bukhari) - Hadith 22 - https://sunnah.com/bukhari:22
-2025-11-22T07:42:58.116Z - FRONTEND - INFO - [CITATION 3] Hadith (Muslim) - Hadith 107 - https://sunnah.com/muslim:107
-2025-11-22T07:42:58.117Z - FRONTEND - INFO - [CITATION 4] Hadith (Muslim) - Hadith 124 - https://sunnah.com/muslim:124
-2025-11-22T07:42:58.118Z - FRONTEND - INFO - [CITATION 5] Hadith (Abudawud) - Hadith 36 - https://sunnah.com/abudawud:36
-2025-11-22T07:42:58.118Z - FRONTEND - INFO - [CITATION 6] Hadith (Abudawud) - Hadith 80 - https://sunnah.com/abudawud:80
-2025-11-22T07:42:58.118Z - FRONTEND - INFO - [CITATION 7] Hadith (Tirmidhi) - Hadith 480 - https://sunnah.com/tirmidhi:480
-2025-11-22T07:42:58.119Z - FRONTEND - INFO - [CITATION 9] Hadith (Nasai) - Hadith 913 - https://sunnah.com/nasai:913
-2025-11-22T07:42:58.119Z - FRONTEND - INFO - [CITATION 8] Hadith (Tirmidhi) - Hadith 1018 - https://sunnah.com/tirmidhi:1018
-2025-11-22T07:42:58.120Z - FRONTEND - INFO - [CITATION 10] Hadith (Nasai) - Hadith 938 - https://sunnah.com/nasai:938
-2025-11-22T07:42:58.120Z - FRONTEND - INFO - [CITATION 11] Hadith (Ibnmajah) - Hadith 46 - https://sunnah.com/ibnmajah:46
-2025-11-22T07:42:58.121Z - FRONTEND - INFO - [CITATION 12] Hadith (Ibnmajah) - Hadith 76 - https://sunnah.com/ibnmajah:76
-2025-11-22T07:42:58.121Z - FRONTEND - INFO - [CITATION 13] Hadith (Bukhari) - Hadith 18 - https://sunnah.com/bukhari:18
-2025-11-22T07:42:58.122Z - FRONTEND - INFO - [CITATION 15] Hadith (Muslim) - Hadith 257 - https://sunnah.com/muslim:257
-2025-11-22T07:42:58.121Z - FRONTEND - INFO - [CITATION 14] Hadith (Bukhari) - Hadith 614 - https://sunnah.com/bukhari:614
-2025-11-22T07:42:58.122Z - FRONTEND - INFO - [CITATION 16] Hadith (Muslim) - Hadith 258 - https://sunnah.com/muslim:258
-2025-11-22T07:42:58.123Z - FRONTEND - INFO - [CITATION 18] Hadith (Abudawud) - Hadith 760 - https://sunnah.com/abudawud:760
-2025-11-22T07:42:58.123Z - FRONTEND - INFO - [CITATION 17] Hadith (Abudawud) - Hadith 525 - https://sunnah.com/abudawud:525
-2025-11-22T07:42:58.123Z - FRONTEND - INFO - [CITATION 19] Hadith (Tirmidhi) - Hadith 55 - https://sunnah.com/tirmidhi:55
-2025-11-22T07:42:58.124Z - FRONTEND - INFO - [CITATION 21] Hadith (Nasai) - Hadith 679 - https://sunnah.com/nasai:679
-2025-11-22T07:42:58.124Z - FRONTEND - INFO - [CITATION 20] Hadith (Tirmidhi) - Hadith 113 - https://sunnah.com/tirmidhi:113
-2025-11-22T07:42:58.125Z - FRONTEND - INFO - [CITATION 22] Hadith (Nasai) - Hadith 896 - https://sunnah.com/nasai:896
-2025-11-22T07:42:58.125Z - FRONTEND - INFO - [CITATION 23] Hadith (Ibnmajah) - Hadith 28 - https://sunnah.com/ibnmajah:28
-2025-11-22T07:42:58.126Z - FRONTEND - INFO - [CITATION 24] Hadith (Ibnmajah) - Hadith 70 - https://sunnah.com/ibnmajah:70
-2025-11-22T07:42:58.126Z - FRONTEND - INFO - [CITATION 25] Hadith (Bukhari) - Hadith 371 - https://sunnah.com/bukhari:371
-2025-11-22T07:42:58.126Z - FRONTEND - INFO - [CITATION 26] Hadith (Bukhari) - Hadith 1837 - https://sunnah.com/bukhari:1837
-2025-11-22T07:42:58.127Z - FRONTEND - INFO - [CITATION 27] Hadith (Muslim) - Hadith 2126 - https://sunnah.com/muslim:2126
-2025-11-22T07:42:58.127Z - FRONTEND - INFO - [CITATION 28] Hadith (Muslim) - Hadith 2481 - https://sunnah.com/muslim:2481
-2025-11-22T07:42:58.127Z - FRONTEND - INFO - [CITATION 29] Hadith (Abudawud) - Hadith 1841 - https://sunnah.com/abudawud:1841
-2025-11-22T07:42:58.128Z - FRONTEND - INFO - [CITATION 30] Hadith (Abudawud) - Hadith 1845 - https://sunnah.com/abudawud:1845
-2025-11-22T07:42:58.128Z - FRONTEND - INFO - [CITATION 32] Hadith (Tirmidhi) - Hadith 1075 - https://sunnah.com/tirmidhi:1075
-2025-11-22T07:42:58.129Z - FRONTEND - INFO - [CITATION 33] Hadith (Nasai) - Hadith 75 - https://sunnah.com/nasai:75
-2025-11-22T07:42:58.128Z - FRONTEND - INFO - [CITATION 31] Hadith (Tirmidhi) - Hadith 171 - https://sunnah.com/tirmidhi:171
-2025-11-22T07:42:58.129Z - FRONTEND - INFO - [CITATION 35] Hadith (Ibnmajah) - Hadith 1846 - https://sunnah.com/ibnmajah:1846
-2025-11-22T07:42:58.130Z - FRONTEND - INFO - [CITATION 36] Hadith (Ibnmajah) - Hadith 1847 - https://sunnah.com/ibnmajah:1847
-2025-11-22T07:42:58.129Z - FRONTEND - INFO - [CITATION 34] Hadith (Nasai) - Hadith 2842 - https://sunnah.com/nasai:2842
-2025-11-22T07:42:58.131Z - FRONTEND - INFO - [CITATION 38] Hadith (Muslim) - Hadith 241 - https://sunnah.com/muslim:241
-2025-11-22T07:42:58.131Z - FRONTEND - INFO - [CITATION 39] Hadith (Muslim) - Hadith 454 - https://sunnah.com/muslim:454
-2025-11-22T07:42:58.130Z - FRONTEND - INFO - [CITATION 37] Hadith (Bukhari) - Hadith 4746 - https://sunnah.com/bukhari:4746
-2025-11-22T07:42:58.132Z - FRONTEND - INFO - [CITATION 41] Hadith (Abudawud) - Hadith 2248 - https://sunnah.com/abudawud:2248
-2025-11-22T07:42:58.133Z - FRONTEND - INFO - [CITATION 42] Hadith (Nasai) - Hadith 1983 - https://sunnah.com/nasai:1983
-2025-11-22T07:42:58.131Z - FRONTEND - INFO - [CITATION 40] Hadith (Abudawud) - Hadith 2237 - https://sunnah.com/abudawud:2237
-2025-11-22T07:42:58.133Z - FRONTEND - INFO - [CITATION 43] Hadith (Ibnmajah) - Hadith 374 - https://sunnah.com/ibnmajah:374
-2025-11-22T07:42:58.133Z - FRONTEND - INFO - [SUCCESS] Returning data to display
-2025-11-22T07:42:58.134Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:42:58.135Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
-2025-11-22T07:42:58.137Z - FRONTEND - INFO - [DISPLAY] Displaying 43 citations
-2025-11-22T07:42:58.138Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
-2025-11-22T07:42:58.136Z - FRONTEND - INFO - [DISPLAY] Answer length: 2679 characters
-2025-11-22T07:46:06.347Z - FRONTEND - INFO - [USER ACTION] Search button clicked
-2025-11-22T07:46:06.348Z - FRONTEND - INFO - [VALIDATION] Query length: 21 characters
-2025-11-22T07:46:06.348Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
-2025-11-22T07:46:09.955Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:46:09.956Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
-2025-11-22T07:46:09.957Z - FRONTEND - INFO - [REQUEST] Query: "How to find halal job"
-2025-11-22T07:46:09.957Z - FRONTEND - INFO - [REQUEST] Source: internal
-2025-11-22T07:46:09.957Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:46:09.958Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
-2025-11-22T07:46:09.958Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"How to find halal job","source":"internal"}
-2025-11-22T07:46:13.794Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
-2025-11-22T07:46:13.796Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"1749","content-type":"application/json","date":"Sat, 22 Nov 2025 07:46:09 GMT","server":"uvicorn"}
-2025-11-22T07:46:13.798Z - FRONTEND - INFO - [SUCCESS] Returning data to display
-2025-11-22T07:46:13.798Z - FRONTEND - INFO - [API RESPONSE] Citations count: 0
-2025-11-22T07:46:13.797Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
-2025-11-22T07:46:13.797Z - FRONTEND - INFO - [API RESPONSE] Data: {
-  "answer": "Finding a halal job is a commendable goal, and Allah (SWT) will surely guide you if you seek His help and follow the right path. Here are some practic... [TRUNCATED 1555 chars]",
-  "citations": []
+2025-11-22T09:57:17.640Z - FRONTEND - INFO - [CITATION 1] Hadith (Bukhari) - Hadith 3 - https://sunnah.com/bukhari:3
+2025-11-22T09:57:17.640Z - FRONTEND - INFO - [API RESPONSE] Citations count: 27
+2025-11-22T09:57:17.641Z - FRONTEND - INFO - [CITATION 3] Hadith (Muslim) - Hadith 143 - https://sunnah.com/muslim:143
+2025-11-22T09:57:17.641Z - FRONTEND - INFO - [CITATION 2] Hadith (Bukhari) - Hadith 7 - https://sunnah.com/bukhari:7
+2025-11-22T09:57:17.642Z - FRONTEND - INFO - [CITATION 5] Hadith (Bukhari) - Hadith 3591 - https://sunnah.com/bukhari:3591
+2025-11-22T09:57:17.641Z - FRONTEND - INFO - [CITATION 4] Hadith (Muslim) - Hadith 310 - https://sunnah.com/muslim:310
+2025-11-22T09:57:17.643Z - FRONTEND - INFO - [CITATION 7] Hadith (Muslim) - Hadith 2766 - https://sunnah.com/muslim:2766
+2025-11-22T09:57:17.642Z - FRONTEND - INFO - [CITATION 6] Hadith (Bukhari) - Hadith 3774 - https://sunnah.com/bukhari:3774
+2025-11-22T09:57:17.643Z - FRONTEND - INFO - [CITATION 8] Hadith (Muslim) - Hadith 2951 - https://sunnah.com/muslim:2951
+2025-11-22T09:57:17.643Z - FRONTEND - INFO - [CITATION 9] Hadith (Bukhari) - Hadith 3623 - https://sunnah.com/bukhari:3623
+2025-11-22T09:57:17.644Z - FRONTEND - INFO - [CITATION 11] Hadith (Bukhari) - Hadith 1034 - https://sunnah.com/bukhari:1034
+2025-11-22T09:57:17.644Z - FRONTEND - INFO - [CITATION 10] Hadith (Bukhari) - Hadith 3624 - https://sunnah.com/bukhari:3624
+2025-11-22T09:57:17.645Z - FRONTEND - INFO - [CITATION 13] Hadith (Muslim) - Hadith 480 - https://sunnah.com/muslim:480
+2025-11-22T09:57:17.644Z - FRONTEND - INFO - [CITATION 12] Hadith (Muslim) - Hadith 147 - https://sunnah.com/muslim:147
+2025-11-22T09:57:17.645Z - FRONTEND - INFO - [CITATION 14] Hadith (Bukhari) - Hadith 2661 - https://sunnah.com/bukhari:2661
+2025-11-22T09:57:17.645Z - FRONTEND - INFO - [CITATION 15] Hadith (Bukhari) - Hadith 3129 - https://sunnah.com/bukhari:3129
+2025-11-22T09:57:17.646Z - FRONTEND - INFO - [CITATION 16] Hadith (Muslim) - Hadith 6568 - https://sunnah.com/muslim:6568
+2025-11-22T09:57:17.647Z - FRONTEND - INFO - [CITATION 18] Hadith (Bukhari) - Hadith 226 - https://sunnah.com/bukhari:226
+2025-11-22T09:57:17.646Z - FRONTEND - INFO - [CITATION 17] Hadith (Muslim) - Hadith 7021 - https://sunnah.com/muslim:7021
+2025-11-22T09:57:17.647Z - FRONTEND - INFO - [CITATION 20] Hadith (Muslim) - Hadith 93 - https://sunnah.com/muslim:93
+2025-11-22T09:57:17.648Z - FRONTEND - INFO - [CITATION 22] Hadith (Bukhari) - Hadith 1304 - https://sunnah.com/bukhari:1304
+2025-11-22T09:57:17.647Z - FRONTEND - INFO - [CITATION 21] Hadith (Muslim) - Hadith 120 - https://sunnah.com/muslim:120
+2025-11-22T09:57:17.647Z - FRONTEND - INFO - [CITATION 19] Hadith (Bukhari) - Hadith 371 - https://sunnah.com/bukhari:371
+2025-11-22T09:57:17.648Z - FRONTEND - INFO - [CITATION 23] Hadith (Bukhari) - Hadith 4906 - https://sunnah.com/bukhari:4906
+2025-11-22T09:57:17.648Z - FRONTEND - INFO - [CITATION 24] Hadith (Muslim) - Hadith 287 - https://sunnah.com/muslim:287
+2025-11-22T09:57:17.649Z - FRONTEND - INFO - [CITATION 25] Hadith (Muslim) - Hadith 288 - https://sunnah.com/muslim:288
+2025-11-22T09:57:17.649Z - FRONTEND - INFO - [CITATION 26] Hadith (Bukhari) - Hadith 2573 - https://sunnah.com/bukhari:2573
+2025-11-22T09:57:17.650Z - FRONTEND - INFO - [CITATION 27] Hadith (Bukhari) - Hadith 2596 - https://sunnah.com/bukhari:2596
+2025-11-22T09:57:17.650Z - FRONTEND - INFO - ================================================================================
+2025-11-22T09:57:17.651Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
+2025-11-22T09:57:17.650Z - FRONTEND - INFO - [SUCCESS] Returning data to display
+2025-11-22T09:57:17.651Z - FRONTEND - INFO - [DISPLAY] Answer length: 2489 characters
+2025-11-22T09:57:17.653Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
+2025-11-22T09:57:17.652Z - FRONTEND - INFO - [DISPLAY] Displaying 27 citations
+2025-11-22T10:01:36.664Z - FRONTEND - INFO - [USER ACTION] Search button clicked
+2025-11-22T10:01:36.670Z - FRONTEND - INFO - [VALIDATION] Query length: 22 characters
+2025-11-22T10:01:36.671Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
+2025-11-22T10:01:40.274Z - FRONTEND - INFO - ================================================================================
+2025-11-22T10:01:40.276Z - FRONTEND - INFO - [REQUEST] Source: external
+2025-11-22T10:01:40.275Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
+2025-11-22T10:01:40.275Z - FRONTEND - INFO - [REQUEST] Query: "i feel sad and anxious"
+2025-11-22T10:01:40.276Z - FRONTEND - INFO - [REQUEST] Hadith Collection: Forty_Collections
+2025-11-22T10:01:40.276Z - FRONTEND - INFO - [REQUEST] Hadith Books: eng-qudsi, eng-nawawi, eng-dehlawi
+2025-11-22T10:01:40.277Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
+2025-11-22T10:01:40.277Z - FRONTEND - INFO - ================================================================================
+2025-11-22T10:01:40.277Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"i feel sad and anxious","source":"external","hadith_collection":["eng-qudsi","eng-nawawi","eng-dehlawi"]}
+2025-11-22T10:01:59.387Z - FRONTEND - INFO - [API RESPONSE] Status: 200 OK
+2025-11-22T10:01:59.388Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"598","content-type":"application/json","date":"Sat, 22 Nov 2025 10:01:40 GMT","server":"uvicorn"}
+2025-11-22T10:01:59.389Z - FRONTEND - INFO - [API RESPONSE] Data parsed successfully
+2025-11-22T10:01:59.389Z - FRONTEND - INFO - [API RESPONSE] Data: {
+  "answer": "I understand you're feeling sad and anxious. Remember that Allah is always with you and is aware of your struggles. Turn to Him in prayer (salah), as ... [TRUNCATED 344 chars]",
+  "citations": [
+    {
+      "title": "Hadith (Nawawi) - Hadith 2",
+      "url": "https://sunnah.com/nawawi:2"
+    }
+  ]
 }
-2025-11-22T07:46:13.799Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:46:13.799Z - FRONTEND - INFO - [DISPLAY] Answer length: 1705 characters
-2025-11-22T07:46:13.799Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
-2025-11-22T07:46:13.800Z - FRONTEND - INFO - [DISPLAY] No citations to display
-2025-11-22T07:46:13.800Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
-2025-11-22T07:46:43.058Z - FRONTEND - INFO - [USER ACTION] Search button clicked
-2025-11-22T07:46:43.060Z - FRONTEND - INFO - [VALIDATION] Query length: 21 characters
-2025-11-22T07:46:43.060Z - FRONTEND - INFO - [VALIDATION] Input validated successfully
-2025-11-22T07:46:46.667Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:46:46.668Z - FRONTEND - INFO - [USER ACTION] Starting guidance request
-2025-11-22T07:46:46.669Z - FRONTEND - INFO - [REQUEST] Query: "How to find halal job"
-2025-11-22T07:46:46.669Z - FRONTEND - INFO - [REQUEST] Source: both
-2025-11-22T07:46:46.670Z - FRONTEND - INFO - [API REQUEST] Sending POST to /api/guidance
-2025-11-22T07:46:46.669Z - FRONTEND - INFO - ================================================================================
-2025-11-22T07:46:46.670Z - FRONTEND - INFO - [API REQUEST] Body: {"query":"How to find halal job","source":"both"}
-2025-11-22T07:47:34.353Z - FRONTEND - INFO - [API RESPONSE] Status: 500 Internal Server Error
-2025-11-22T07:47:34.355Z - FRONTEND - ERROR - [API ERROR] Status 500
-2025-11-22T07:47:34.354Z - FRONTEND - INFO - [API RESPONSE] Headers: {"access-control-allow-credentials":"true","access-control-allow-origin":"*","content-length":"75","content-type":"application/json","date":"Sat, 22 Nov 2025 07:46:45 GMT","server":"uvicorn"}
-2025-11-22T07:47:34.356Z - FRONTEND - ERROR - [ERROR] Error occurred: Server error
-2025-11-22T07:47:34.356Z - FRONTEND - ERROR - [API ERROR] Response: {"detail":"Error generating guidance: 'str' object has no attribute 'get'"}
-2025-11-22T08:15:15.841Z - FRONTEND - INFO - [VALIDATION] Query length: 0 characters
-2025-11-22T08:15:15.836Z - FRONTEND - INFO - [USER ACTION] Search button clicked
-2025-11-22T08:15:15.842Z - FRONTEND - WARNING - [VALIDATION] Query too short, showing toast
+2025-11-22T10:01:59.390Z - FRONTEND - INFO - [API RESPONSE] Citations count: 1
+2025-11-22T10:01:59.390Z - FRONTEND - INFO - [CITATION 1] Hadith (Nawawi) - Hadith 2 - https://sunnah.com/nawawi:2
+2025-11-22T10:01:59.391Z - FRONTEND - INFO - [SUCCESS] Returning data to display
+2025-11-22T10:01:59.391Z - FRONTEND - INFO - ================================================================================
+2025-11-22T10:01:59.392Z - FRONTEND - INFO - [DISPLAY] Displaying results to user
+2025-11-22T10:01:59.393Z - FRONTEND - INFO - [DISPLAY] Answer length: 494 characters
+2025-11-22T10:01:59.394Z - FRONTEND - INFO - [DISPLAY] Results displayed successfully
+2025-11-22T10:01:59.393Z - FRONTEND - INFO - [DISPLAY] Displaying 1 citations

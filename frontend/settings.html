@@ -8,10 +8,23 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Dark Mode Toggle -->
+  <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode" title="Toggle Dark Mode">
+    <span class="moon-icon">🌙</span>
+    <span class="sun-icon hidden">☀️</span>
+  </button>
+  
   <section class="hero">
     <img src="logo.svg" alt="Islamic Guidance AI" class="logo" />
     <h1>Settings</h1>
     <div class="settings-panel">
+      <label for="themeSelect">Theme</label>
+      <select id="themeSelect" aria-label="Select theme">
+        <option value="modern">Modern Blue</option>
+        <option value="traditional">Traditional Islamic</option>
+        <option value="minimal">Minimal White</option>
+      </select>
+      
       <label for="apiKey">Google Gemini API Key</label>
       <div class="password-input-wrapper">
         <input type="password" id="apiKey" placeholder="Enter your API key" autocomplete="off" />
