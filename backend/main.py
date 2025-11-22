@@ -1,8 +1,6 @@
 """
 Islamic Guidance AI - Main FastAPI Backend Application (OPTIMIZED v2.1)
 Provides AI-powered Islamic guidance using Gemini AI and external Islamic text APIs
-
-All P0-P3 issues fixed with YAKE + Custom keyword extraction
 """
 
 import os
@@ -13,6 +11,7 @@ import uvicorn
 import asyncio
 import hashlib
 import uuid
+import time
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,8 +24,23 @@ from slowapi.errors import RateLimitExceeded
 from dotenv import load_dotenv
 import google.generativeai as genai
 from typing import Optional, List, Dict
-import time
-from utils import detect_serverless_environment
+
+# Import serverless detection utility
+try:
+    from backend.utils import detect_serverless_environment
+except ImportError:
+    try:
+        from utils import detect_serverless_environment
+    except ImportError:
+        # Fallback: Simple detection if utils module fails
+        def detect_serverless_environment() -> bool:
+            return bool(
+                os.getenv("VERCEL") == "1" or 
+                os.getenv("VERCEL_ENV") or 
+                os.getenv("AWS_LAMBDA_FUNCTION_NAME") or 
+                os.getenv("AWS_EXECUTION_ENV")
+            )
+
 
 # =============================================================================
 # MODULE-LEVEL CONFIGURATION
