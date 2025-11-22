@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 from typing import Optional, List, Dict
 import time
+from utils import detect_serverless_environment
 
 # =============================================================================
 # MODULE-LEVEL CONFIGURATION
@@ -35,7 +36,7 @@ import time
 load_dotenv()
 
 # Environment Configuration
-IS_SERVERLESS = os.getenv("VERCEL") == "1"
+IS_SERVERLESS = detect_serverless_environment()
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Cache models and extractors at module level (Issue #16 - P2)
@@ -490,14 +491,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Print startup configuration
+# Print startup configuration with diagnostics
 print("="*80, file=sys.stdout, flush=True)
 print("Loading IslamicGuideAI Backend Module (OPTIMIZED v2.1 with YAKE)...", file=sys.stdout, flush=True)
 print(f"Environment: {'SERVERLESS (Vercel)' if IS_SERVERLESS else 'LOCAL DEVELOPMENT'}", file=sys.stdout, flush=True)
 print(f"YAKE Available: {YAKE_AVAILABLE}", file=sys.stdout, flush=True)
 print(f"Custom Extractor Available: {KeywordExtractorNoDeps is not None}", file=sys.stdout, flush=True)
-print(f"CORS Origins: {allowed_origins}", file=sys.stdout, flush=True)
+
+# Print environment diagnostics
+print("\n[ENVIRONMENT DIAGNOSTICS]", file=sys.stdout, flush=True)
+print(f"  VERCEL: {os.getenv('VERCEL', 'Not set')}", file=sys.stdout, flush=True)
+print(f"  VERCEL_ENV: {os.getenv('VERCEL_ENV', 'Not set')}", file=sys.stdout, flush=True)
+print(f"  VERCEL_URL: {os.getenv('VERCEL_URL', 'Not set')}", file=sys.stdout, flush=True)
+print(f"  AWS_LAMBDA_FUNCTION_NAME: {'Set' if os.getenv('AWS_LAMBDA_FUNCTION_NAME') else 'Not set'}", file=sys.stdout, flush=True)
+print(f"  GEMINI_API_KEY: {'Set (length: ' + str(len(API_KEY)) + ')' if API_KEY else 'Not set'}", file=sys.stdout, flush=True)
+
+print(f"\nCORS Origins: {allowed_origins}", file=sys.stdout, flush=True)
 print("="*80, file=sys.stdout, flush=True)
+
 
 # =============================================================================
 # LIFECYCLE EVENTS
@@ -956,15 +967,47 @@ async def test_keywords_endpoint(text: str):
 
 @app.get("/api/get-api-key")
 async def get_api_key():
-    """Return the Gemini API key (masked in production)"""
-    if IS_SERVERLESS:
-        if API_KEY:
-            masked_key = API_KEY[:8] + "..." + API_KEY[-4:] if len(API_KEY) > 12 else "***"
-            return {"apiKey": masked_key, "isProduction": True}
+    """
+    Return the Gemini API key (masked in production).
+    
+    Returns:
+        - Masked key in serverless
+        - Full key in local development
+    """
+    try:
+        if IS_SERVERLESS:
+            if API_KEY:
+                # Mask key for security (show first 8 and last 4 chars)
+                masked_key = API_KEY[:8] + "..." + API_KEY[-4:] if len(API_KEY) > 12 else "***"
+                return {
+                    "apiKey": masked_key, 
+                    "isProduction": True,
+                    "environment": os.getenv("VERCEL_ENV", "production")
+                }
+            else:
+                return {
+                    "apiKey": "", 
+                    "isProduction": True,
+                    "error": "API key not configured in Vercel Dashboard",
+                    "environment": os.getenv("VERCEL_ENV", "production")
+                }
         else:
-            return {"apiKey": "", "isProduction": True}
-    else:
-        return {"apiKey": API_KEY or "", "isProduction": False}
+            # Local development - return full key
+            return {
+                "apiKey": API_KEY or "", 
+                "isProduction": False,
+                "environment": "local"
+            }
+    except Exception as e:
+        print(f"[GET-API-KEY] Error: {e}", file=sys.stderr, flush=True)
+        traceback.print_exc()
+        # Return safe error response instead of crashing
+        return {
+            "apiKey": "",
+            "isProduction": IS_SERVERLESS,
+            "error": f"Error retrieving API key: {str(e)[:100]}",
+            "environment": "unknown"
+        }
 
 @app.post("/api/save-api-key")
 async def save_api_key(request: APIKeyRequest):
@@ -974,24 +1017,34 @@ async def save_api_key(request: APIKeyRequest):
     In serverless: Returns instructions for Vercel Dashboard
     In local dev: Writes to .env file
     """
-    if IS_SERVERLESS:
-        # Return instructions for Vercel Dashboard
-        return {
-            "success": False,
-            "isProduction": True,
-            "message": "API key cannot be saved in production environment.",
-            "instructions": "Please set GEMINI_API_KEY in your Vercel Dashboard:",
-            "documentation": "https://vercel.com/docs/projects/environment-variables"
-        }
-    
-    # Local development - save to .env file
     try:
+        if IS_SERVERLESS:
+            # Serverless: Cannot write to filesystem, return instructions
+            return {
+                "success": False,
+                "isProduction": True,
+                "message": "API keys cannot be saved in serverless environments.",
+                "instructions": "Please set environment variables in your deployment platform:",
+                "steps": [
+                    "1. Go to your Vercel Dashboard",
+                    "2. Select your project",
+                    "3. Go to Settings → Environment Variables",
+                    "4. Add GEMINI_API_KEY with your API key",
+                    "5. Redeploy your application"
+                ],
+                "documentation": "https://vercel.com/docs/projects/environment-variables",
+                "environment": os.getenv("VERCEL_ENV", "production")
+            }
+        
+        # Local development - save to .env file
         new_key = request.apiKey.strip()
         if not new_key:
             raise HTTPException(status_code=400, detail="API key cannot be empty")
         
+        # Find .env file path
         env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
         
+        # Read existing .env file
         env_lines = []
         key_found = False
         
@@ -999,28 +1052,42 @@ async def save_api_key(request: APIKeyRequest):
             with open(env_path, "r", encoding="utf-8") as f:
                 env_lines = f.readlines()
             
+            # Update existing key
             for i, line in enumerate(env_lines):
                 if line.startswith("GEMINI_API_KEY="):
                     env_lines[i] = f"GEMINI_API_KEY={new_key}\n"
                     key_found = True
                     break
         
+        # Add new key if not found
         if not key_found:
             env_lines.append(f"GEMINI_API_KEY={new_key}\n")
         
+        # Write back to .env file
         with open(env_path, "w", encoding="utf-8") as f:
             f.writelines(env_lines)
         
+        # Update runtime environment variable
         os.environ["GEMINI_API_KEY"] = new_key
         
         return {
             "success": True,
             "isProduction": False,
-            "message": "API key saved successfully. Please restart the server."
+            "message": "API key saved successfully to .env file.",
+            "note": "Please restart the server for changes to take effect.",
+            "environment": "local"
         }
+        
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"[SAVE-API-KEY] Error: {e}", file=sys.stderr, flush=True)
-        raise HTTPException(status_code=500, detail=f"Error saving API key: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error saving API key: {str(e)[:100]}"
+        )
+
 
 # Mount static files for local development only
 if not IS_SERVERLESS:
