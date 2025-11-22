@@ -71,6 +71,42 @@ class CacheService:
         except Exception as e:
             print(f"[CACHE] Ping failed: {e}", file=sys.stderr, flush=True)
             return False
+    
+    async def delete(self, key: str):
+        """Delete a specific key from cache"""
+        try:
+            if self.is_redis_enabled and self.redis:
+                await self.redis.delete(key)
+                print(f"[CACHE] Deleted key: {key}", file=sys.stdout, flush=True)
+            else:
+                if key in self.memory_cache:
+                    del self.memory_cache[key]
+                    print(f"[CACHE] Deleted key from memory: {key}", file=sys.stdout, flush=True)
+        except Exception as e:
+            print(f"[CACHE] Error deleting key {key}: {e}", file=sys.stderr, flush=True)
+    
+    async def clear_pattern(self, pattern: str):
+        """Clear all keys matching a pattern (e.g., 'quran_search:*')"""
+        try:
+            if self.is_redis_enabled and self.redis:
+                cursor = 0
+                deleted_count = 0
+                while True:
+                    cursor, keys = await self.redis.scan(cursor, match=pattern, count=100)
+                    if keys:
+                        await self.redis.delete(*keys)
+                        deleted_count += len(keys)
+                    if cursor == 0:
+                        break
+                print(f"[CACHE] Cleared {deleted_count} keys matching pattern: {pattern}", file=sys.stdout, flush=True)
+            else:
+                # In-memory cache: clear matching keys
+                keys_to_delete = [k for k in self.memory_cache.keys() if pattern.replace('*', '') in k]
+                for key in keys_to_delete:
+                    del self.memory_cache[key]
+                print(f"[CACHE] Cleared {len(keys_to_delete)} keys from memory matching pattern: {pattern}", file=sys.stdout, flush=True)
+        except Exception as e:
+            print(f"[CACHE] Error clearing pattern {pattern}: {e}", file=sys.stderr, flush=True)
 
 # Global cache instance
 cache = CacheService()

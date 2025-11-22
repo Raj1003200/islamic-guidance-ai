@@ -307,13 +307,31 @@ function displayResult(data) {
     
     logToServer('info', `[DISPLAY] Answer length: ${(data.answer || '').length} characters`);
     
-    // Populate answer
-    answerDiv.textContent = data.answer || '';
+    // Populate answer with basic markdown formatting support
+    let answerText = data.answer || '';
+    
+    // Convert markdown-style formatting to HTML
+    // Bold text: **text** -> <strong>text</strong>
+    answerText = answerText.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // Line breaks: \n -> <br>
+    answerText = answerText.replace(/\n/g, '<br>');
+    
+    // Set as HTML to render formatting
+    answerDiv.innerHTML = answerText;
     
     // Populate citations if any
     citationsDiv.innerHTML = '';
     if (data.citations && data.citations.length) {
         logToServer('info', `[DISPLAY] Displaying ${data.citations.length} citations`);
+        
+        // Add a header for citations
+        const citationHeader = document.createElement('h3');
+        citationHeader.textContent = 'References & Citations';
+        citationHeader.style.marginTop = '20px';
+        citationHeader.style.marginBottom = '10px';
+        citationsDiv.appendChild(citationHeader);
+        
         const list = document.createElement('ul');
         
         data.citations.forEach((cite) => {

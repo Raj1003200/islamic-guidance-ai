@@ -257,6 +257,7 @@ async def search_quran_async(keyword: str, max_results: int = 3) -> List[Dict]:
                                 {
                                     "text": match["text"],
                                     "surah": match["surah"]["englishName"],
+                                    "surahNumber": match["surah"]["number"],
                                     "number": match["number"],
                                     "numberInSurah": match["numberInSurah"],
                                     "source": "Quran"

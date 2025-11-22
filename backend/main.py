@@ -837,9 +837,138 @@ async def get_guidance(request: GuidanceRequest, req: Request):
         quran_results = []
         unique_hadiths = []
         
-        # Perform Search if Source is External or Both
-        if request.source in ["external", "both"]:
-            print(f"[REQUEST {request_id}] Starting external API search...", file=sys.stdout, flush=True)
+        # =====================================================================
+        # MODE 1: EXTERNAL SOURCES ONLY (No Gemini API)
+        # =====================================================================
+        if request.source == "external":
+            print(f"[REQUEST {request_id}] EXTERNAL MODE: Using only Quran + Hadith APIs (NO Gemini)", file=sys.stdout, flush=True)
+            
+            # Extract keywords with YAKE (NO Gemini usage)
+            keyword_list = await extract_keywords_with_cache(request.query, None, use_gemini=False)
+            print(f"[REQUEST {request_id}] Using keywords: {keyword_list}", file=sys.stdout, flush=True)
+            
+            # Get selected Hadith collections
+            selected_collections = request.hadith_collection or [
+                "eng-bukhari",
+                "eng-muslim",
+                "eng-abudawud",
+                "eng-tirmidhi",
+                "eng-nasai",
+                "eng-ibnmajah"
+            ]
+            
+            # Create search tasks with concurrency limit
+            semaphore = asyncio.Semaphore(5)
+            
+            async def search_with_semaphore(keyword):
+                async with semaphore:
+                    return await search_hadith_async(
+                        keyword,
+                        collections=selected_collections,
+                        max_per_collection=1
+                    )
+            
+            # Execute searches concurrently with timeout
+            try:
+                quran_task = search_quran_async(", ".join(keyword_list), max_results=3)
+                hadith_tasks = [search_with_semaphore(kw) for kw in keyword_list]
+                
+                search_timeout = 6
+                search_results = await asyncio.wait_for(
+                    asyncio.gather(quran_task, *hadith_tasks, return_exceptions=True),
+                    timeout=search_timeout
+                )
+                
+                # Process Quran results
+                if isinstance(search_results[0], Exception):
+                    print(f"[REQUEST {request_id}] Quran search failed: {search_results[0]}", file=sys.stderr, flush=True)
+                    quran_results = []
+                else:
+                    quran_results = search_results[0]
+                    print(f"[REQUEST {request_id}] Found {len(quran_results)} Quran verses", file=sys.stdout, flush=True)
+                
+                # Process Hadith results
+                all_hadith_results = []
+                for idx, result in enumerate(search_results[1:], 1):
+                    if isinstance(result, Exception):
+                        print(f"[REQUEST {request_id}] Hadith search {idx} failed: {result}", file=sys.stderr, flush=True)
+                    elif result:
+                        all_hadith_results.extend(result)
+                
+                # Remove duplicate hadiths
+                seen = set()
+                unique_hadiths = []
+                for hadith in all_hadith_results:
+                    key = (hadith.get('book', ''), hadith.get('hadithnumber', ''))
+                    if key not in seen:
+                        seen.add(key)
+                        unique_hadiths.append(hadith)
+                
+                print(f"[REQUEST {request_id}] Found {len(unique_hadiths)} unique hadiths", file=sys.stdout, flush=True)
+                
+            except asyncio.TimeoutError:
+                print(f"[REQUEST {request_id}] Search timed out after {search_timeout}s", file=sys.stderr, flush=True)
+                quran_results = []
+                unique_hadiths = []
+            
+            # Build answer text from search results (NO Gemini processing)
+            answer_text = ""
+            
+            if quran_results:
+                answer_text += "**Quran Verses:**\n\n"
+                for verse in quran_results:
+                    verse_num = verse.get('number')
+                    surah_num = verse.get('surahNumber')
+                    verse_in_surah = verse.get('numberInSurah')
+                    if isinstance(verse_num, int) and 1 <= verse_num <= 6236 and surah_num and verse_in_surah:
+                        answer_text += f"- {verse['text']}\n  *(Surah {verse['surah']}, Verse {verse_in_surah})*\n\n"
+                        citations.append({
+                            "title": f"Quran {verse['surah']}:{verse_in_surah}",
+                            "url": f"https://quran.com/{surah_num}:{verse_in_surah}"
+                        })
+            
+            if unique_hadiths:
+                answer_text += f"**Hadiths ({len(unique_hadiths)} found):**\n\n"
+                for hadith in unique_hadiths:
+                    answer_text += f"- {hadith['text']}\n  *({hadith['source']}, Hadith #{hadith['hadithnumber']})*\n\n"
+                    citations.append({
+                        "title": f"{hadith['source']} - Hadith {hadith['hadithnumber']}",
+                        "url": hadith['citation_url']
+                    })
+            
+            # If no results found, provide message
+            if not answer_text:
+                answer_text = "No text found from Quran or Hadith for your query. However, you can explore the citations below if available."
+            
+            # Return data WITHOUT using Gemini
+            data = {
+                "answer": answer_text,
+                "citations": citations
+            }
+            
+            print(f"[REQUEST {request_id}] EXTERNAL MODE: Returning {len(citations)} citations without Gemini processing", file=sys.stdout, flush=True)
+            
+            # Validate response size
+            data = validate_response_size(data)
+            
+            # Cache successful response
+            try:
+                await cache.set(cache_key, data, ttl=1800)
+            except Exception as e:
+                print(f"[REQUEST {request_id}] Cache write error: {e}", file=sys.stderr, flush=True)
+            
+            print(f"[REQUEST {request_id}] Success - returning external sources only", file=sys.stdout, flush=True)
+            print("="*80, file=sys.stdout, flush=True)
+            
+            return data
+        
+        # =====================================================================
+        # MODE 2 & 3: INTERNAL (Gemini only) OR BOTH (Gemini + External)
+        # =====================================================================
+        
+        # Perform Search if Source is Both
+        if request.source == "both":
+            print(f"[REQUEST {request_id}] BOTH MODE: Using Gemini + Quran + Hadith APIs", file=sys.stdout, flush=True)
             
             # Extract keywords with YAKE (Issue #4 - P0: Fast, no API usage)
             keyword_list = await extract_keywords_with_cache(request.query, model, use_gemini=False)
@@ -915,11 +1044,13 @@ async def get_guidance(request: GuidanceRequest, req: Request):
                 for verse in quran_results:
                     # Validate verse number (Issue #18 - P3)
                     verse_num = verse.get('number')
-                    if isinstance(verse_num, int) and 1 <= verse_num <= 6236:
-                        context_text += f"- {verse['text']} (Surah {verse['surah']} {verse_num})\n"
+                    surah_num = verse.get('surahNumber')
+                    verse_in_surah = verse.get('numberInSurah')
+                    if isinstance(verse_num, int) and 1 <= verse_num <= 6236 and surah_num and verse_in_surah:
+                        context_text += f"- {verse['text']} (Surah {verse['surah']} {verse_in_surah})\n"
                         citations.append({
-                            "title": f"Quran {verse['surah']} {verse_num}",
-                            "url": f"https://quran.com/{verse_num}"
+                            "title": f"Quran {verse['surah']}:{verse_in_surah}",
+                            "url": f"https://quran.com/{surah_num}:{verse_in_surah}"
                         })
             
             if unique_hadiths:
@@ -933,6 +1064,8 @@ async def get_guidance(request: GuidanceRequest, req: Request):
                         "title": f"{hadith['source']} - Hadith {hadith['hadithnumber']}",
                         "url": hadith['citation_url']
                     })
+        elif request.source == "internal":
+            print(f"[REQUEST {request_id}] INTERNAL MODE: Using only Gemini API (NO external sources)", file=sys.stdout, flush=True)
         
         # Construct Gemini prompt based on source selection
         base_instruction = """
@@ -942,12 +1075,6 @@ to the user's question with wisdom from Islamic teachings.
         
         if request.source == "internal":
             prompt = f"{base_instruction}\nUser Query: \"{request.query}\"\nUse your internal knowledge of Islamic teachings to provide guidance."
-        elif request.source == "external":
-            has_sources = bool(quran_results or unique_hadiths)
-            if not has_sources:
-                prompt = f"{base_instruction}\nUser Query: \"{request.query}\"\nNo specific sources found. Provide general Islamic guidance."
-            else:
-                prompt = f"{base_instruction}\nUser Query: \"{request.query}\"\n\nCONTEXT:\n{context_text}\n\nUse ONLY the provided context."
         else:  # both
             prompt = f"{base_instruction}\nUser Query: \"{request.query}\"\n\nCONTEXT:\n{context_text}\n\nCombine context with your knowledge."
         
@@ -980,15 +1107,12 @@ Otherwise return JSON:
         
         data = json.loads(response_text.strip())
         
-        # Merge citations
-        if "answer" in data and request.source in ["external", "both"]:
-            if request.source == "external":
-                data["citations"] = citations
-            else:
-                existing_urls = {c.get("url") for c in data.get("citations", [])}
-                for citation in citations:
-                    if citation["url"] not in existing_urls:
-                        data.setdefault("citations", []).append(citation)
+        # Merge citations for "both" mode
+        if "answer" in data and request.source == "both":
+            existing_urls = {c.get("url") for c in data.get("citations", [])}
+            for citation in citations:
+                if citation["url"] not in existing_urls:
+                    data.setdefault("citations", []).append(citation)
         
         # Validate response size before returning (Issue #2 - P0)
         data = validate_response_size(data)
@@ -1191,6 +1315,49 @@ async def save_api_key(request: APIKeyRequest):
         raise HTTPException(
             status_code=500, 
             detail=f"Error saving API key: {str(e)[:100]}"
+        )
+
+@app.post("/api/admin/clear-cache")
+async def clear_cache_endpoint(pattern: Optional[str] = None):
+    """
+    Clear cache (admin endpoint for development/debugging)
+    
+    Args:
+        pattern: Optional pattern to match (e.g., 'quran_search:*', 'guidance_response:*')
+                 If not provided, clears common patterns
+    """
+    try:
+        patterns_to_clear = []
+        
+        if pattern:
+            patterns_to_clear = [pattern]
+        else:
+            # Clear common cache patterns
+            patterns_to_clear = [
+                "quran_search:*",
+                "guidance_response:*",
+                "keywords:*",
+                "hadith_collection:*",
+                "ratelimit:*"
+            ]
+        
+        cleared_patterns = []
+        for p in patterns_to_clear:
+            await cache.clear_pattern(p)
+            cleared_patterns.append(p)
+        
+        return {
+            "success": True,
+            "message": f"Cache cleared for {len(cleared_patterns)} patterns",
+            "patterns": cleared_patterns
+        }
+        
+    except Exception as e:
+        print(f"[CLEAR-CACHE] Error: {e}", file=sys.stderr, flush=True)
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error clearing cache: {str(e)[:100]}"
         )
 
 # =============================================================================
