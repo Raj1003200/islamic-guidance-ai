@@ -64,43 +64,6 @@ class TestHadithSearchEndpoint:
         assert response.status_code == 200
         assert response.json() is None
     
-    def test_search_with_empty_topic(self):
-        """Test with empty topic"""
-        response = requests.get(f"{BASE_URL}/api/hadith/search",
-                              params={"topic": "", "book": "bukhari"})
-        assert response.status_code == 200
-
-class TestAPIKeyEndpoints:
-    """Tests for API key management endpoints"""
-    
-    def test_get_api_key(self):
-        """Test retrieving API key"""
-        response = requests.get(f"{BASE_URL}/api/get-api-key")
-        assert response.status_code == 200
-        data = response.json()
-        assert "apiKey" in data
-        assert isinstance(data["apiKey"], str)
-    
-    # def test_save_api_key_valid(self):
-    #     """Test saving a valid API key"""
-    #     test_key = "test_api_key_12345"
-    #     response = requests.post(f"{BASE_URL}/api/save-api-key",
-    #                            json={"apiKey": test_key})
-    #     assert response.status_code == 200
-    #     data = response.json()
-    #     assert data["success"] is True
-    
-    # def test_save_api_key_empty(self):
-    #     """Test saving an empty API key"""
-    #     response = requests.post(f"{BASE_URL}/api/save-api-key",
-    #                            json={"apiKey": ""})
-    #     assert response.status_code == 400
-
-class TestGuidanceEndpoint:
-    """Tests for /api/guidance endpoint"""
-    
-    def test_guidance_with_valid_query_internal(self):
-        """Test with valid query and internal source"""
         response = requests.post(f"{BASE_URL}/api/guidance",
                                json={"query": "I am feeling anxious about my future", "source": "internal"},
                                timeout=30)

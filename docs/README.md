@@ -118,7 +118,7 @@ open tests/frontend/test_ui_components.html
 
 - ✅ Quran search (valid/invalid inputs)
 - ✅ Hadith search (multiple books, topics)
-- ✅ API key management (get/save)
+
 - ✅ Guidance endpoint (valid/invalid queries)
 - ✅ Frontend components (dark mode, input validation)
 - ✅ Static file serving
@@ -159,8 +159,7 @@ islamic-guidance-ai/
 | `/api/quran/search` | GET | Search Quran verses by keyword |
 | `/api/hadith/search` | GET | Search Hadiths by topic and book |
 | `/api/guidance` | POST | Get AI-powered Islamic guidance |
-| `/api/get-api-key` | GET | Retrieved stored API key |
-| `/api/save-api-key` | POST | Save API key to .env file |
+
 
 ### Example API Calls
 
@@ -199,9 +198,7 @@ curl -X POST http://127.0.0.1:8000/api/guidance \
 - Real-time feedback
 - Results include citations with links
 
-## 🔐 Security Notes
 
-> **WARNING**: The `/api/save-api-key` endpoint writes to the `.env` file and is intended for **development use only**. In production, manage API keys through environment variables or secure secret management systems.
 
 ## 📝 License
 

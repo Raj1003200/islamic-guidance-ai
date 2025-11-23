@@ -5,31 +5,7 @@ import sys
 
 BASE_URL = "http://127.0.0.1:8004"
 
-print("=" * 80, file=sys.stdout, flush=True)
-print("Testing API Key Save Endpoint", file=sys.stdout, flush=True)
-print("=" * 80, file=sys.stdout, flush=True)
 
-# Test 1: Save API key
-print("\n[TEST 1] POST /api/save-api-key with valid key...", file=sys.stdout, flush=True)
-response = requests.post(f"{BASE_URL}/api/save-api-key",
-                        json={"apiKey": "AIzaSyTest123"},
-                        timeout=5)
-print(f"Status: {response.status_code}", file=sys.stdout, flush=True)
-if response.status_code == 200:
-    print(f"✓ SUCCESS: {response.json()}", file=sys.stdout, flush=True)
-else:
-    print(f"✗ FAILED: {response.text}", file=sys.stdout, flush=True)
-
-# Test 2: Empty key
-print("\n[TEST 2] POST /api/save-api-key with empty key...", file=sys.stdout, flush=True)
-response = requests.post(f"{BASE_URL}/api/save-api-key",
-                        json={"apiKey": ""},
-                        timeout=5)
-print(f"Status: {response.status_code}", file=sys.stdout, flush=True)
-if response.status_code == 400:
-    print(f"✓ SUCCESS: Correctly rejected empty key", file=sys.stdout, flush=True)
-else:
-    print(f"✗ FAILED: Expected 400, got {response.status_code}", file=sys.stdout, flush=True)
 
 print("\n" + "=" * 80, file=sys.stdout, flush=True)
 print("Testing Guidance Endpoint", file=sys.stdout, flush=True)

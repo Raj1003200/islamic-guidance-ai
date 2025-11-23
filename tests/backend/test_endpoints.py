@@ -86,7 +86,7 @@ def run_health_checks(base_url: str = "http://localhost:8000"):
         
         # Model management
         ("GET", "/api/models", "List Gemini models"),
-        ("GET", "/api/get-api-key", "Get API key"),
+
         
         # Main guidance endpoint
         ("POST", "/api/guidance", "Guidance endpoint", {

@@ -96,20 +96,15 @@ if (darkModeToggle) {
 window.addEventListener('DOMContentLoaded', async () => {
   // First try to load from backend .env
   try {
-    const response = await fetch('/api/get-api-key');
+    const response = await fetch('/api/get-settings');
     if (response.ok) {
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.indexOf("application/json") !== -1) {
-        const data = await response.json();
-        if (data.apiKey) {
-          apiKeyInput.value = data.apiKey;
-        }
-      } else {
-        console.error('Server returned non-JSON response for get-api-key');
+      const data = await response.json();
+      if (data.apiKey) {
+        apiKeyInput.value = data.apiKey;
       }
     }
   } catch (err) {
-    console.error('Could not load API key from server.');
+    console.error('Could not load settings from server.');
   }
 
   // Fallback to localStorage

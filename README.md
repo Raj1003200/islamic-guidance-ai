@@ -278,7 +278,7 @@ Receive frontend logs.
 | `GET` | `/api/quran/search` | Search Quran verses by keyword |
 | `GET` | `/api/hadith/search` | Search Hadith collections by topic |
 | `GET` | `/api/get-settings` | Retrieve current application settings |
-| `POST` | `/api/save-api-key` | Save API key to environment |
+
 | `POST` | `/api/log` | Receive frontend logs |
 | `GET` | `/api/models` | List available Gemini models |
 | `GET` | `/api/models/current` | Get currently selected model |
@@ -337,7 +337,7 @@ Once running, visit:
 ### For Production (Vercel)
 - ✅ Environment variables must be set in Vercel Dashboard
 - ✅ File-based logging is disabled (use Vercel logs)
-- ✅ API key saving endpoint is disabled for security
+- ✅ API key saving endpoint is removed for security
 - ✅ Static files served by Vercel CDN
 
 

@@ -22,7 +22,7 @@ print("=" * 80, file=sys.stdout, flush=True)
 # Wait for server
 print("\n[SETUP] Checking if server is running...", file=sys.stdout, flush=True)
 try:
-    response = requests.get(f"{BASE_URL}/api/get-api-key", timeout=2)
+    response = requests.get(f"{BASE_URL}/api/health", timeout=2)
     print("[OK] Server is ready!\n", file=sys.stdout, flush=True)
 except:
     print("[ERROR] Server not responding. Start it with:", file=sys.stdout, flush=True)
@@ -94,19 +94,7 @@ try:
 except Exception as e:
     print(f"[ERROR] {e}", file=sys.stdout, flush=True)
 
-print("\n[3.3] Testing /api/get-api-key...", file=sys.stdout, flush=True)
-try:
-    response = requests.get(f"{BASE_URL}/api/get-api-key", timeout=5)
-    if response.status_code == 200:
-        data = response.json()
-        if data.get('apiKey'):
-            print(f"[PASS] API key endpoint working (key length: {len(data['apiKey'])})", file=sys.stdout, flush=True)
-        else:
-            print(f"[WARN] No API key in .env", file=sys.stdout, flush=True)
-    else:
-        print(f"[FAIL] Status {response.status_code}", file=sys.stdout, flush=True)
-except Exception as e:
-    print(f"[ERROR] {e}", file=sys.stdout, flush=True)
+
 
 print("\n[3.4] Testing /api/guidance...", file=sys.stdout, flush=True)
 try:

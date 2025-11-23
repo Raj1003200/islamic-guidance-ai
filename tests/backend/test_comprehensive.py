@@ -50,22 +50,7 @@ def test_backend_endpoints():
     except Exception as e:
         print(f"  ✗ ERROR: {e}", file=sys.stdout, flush=True)
     
-    # Test 3: Get API Key
-    print("\n[TEST 3] Testing /api/get-api-key...", file=sys.stdout, flush=True)
-    try:
-        response = requests.get(f"{BASE_URL}/api/get-api-key", timeout=5)
-        print(f"  Status: {response.status_code}", file=sys.stdout, flush=True)
-        if response.status_code == 200:
-            data = response.json()
-            api_key = data.get('apiKey', '')
-            if api_key:
-                print(f"  SUCCESS: API key loaded (length: {len(api_key)})", file=sys.stdout, flush=True)
-            else:
-                print(f"  WARNING: No API key in .env", file=sys.stdout, flush=True)
-        else:
-            print(f"  FAILED: {response.text}", file=sys.stdout, flush=True)
-    except Exception as e:
-        print(f"  ERROR: {e}", file=sys.stdout, flush=True)
+
     
     # Test 4: Guidance Endpoint
     print("\n[TEST 4] Testing /api/guidance...", file=sys.stdout, flush=True)
@@ -179,7 +164,7 @@ def main():
     max_retries = 5
     for i in range(max_retries):
         try:
-            response = requests.get(f"{BASE_URL}/api/get-api-key", timeout=2)
+            response = requests.get(f"{BASE_URL}/api/health", timeout=2)
             if response.status_code == 200:
                 print("  ✓ Server is ready!")
                 break
