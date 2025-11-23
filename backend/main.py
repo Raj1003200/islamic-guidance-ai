@@ -645,7 +645,7 @@ def validate_response_size(data: dict, max_size_bytes: int = 4_500_000) -> dict:
 app = FastAPI(
     title="Islamic Guidance AI",
     description="AI-powered Islamic guidance using Quran and Hadith",
-    version="2.1.0",
+    version="3.0.0",
     lifespan=lifespan
 )
 
@@ -740,7 +740,7 @@ async def health_check():
     health_status = {
         "status": "healthy",
         "service": "IslamicGuideAI",
-        "version": "2.1.0",
+        "version": "3.0.0",
         "environment": "serverless" if IS_SERVERLESS else "development",
         "checks": {}
     }
@@ -803,7 +803,7 @@ async def root():
     return {
         "status": "ok",
         "service": "IslamicGuideAI",
-        "version": "2.1.0",
+        "version": "3.0.0",
         "environment": "serverless" if IS_SERVERLESS else "development",
         "ai_model": "gemini-2.0-flash-exp",
         "keyword_extractor": "YAKE" if YAKE_AVAILABLE else "Custom",

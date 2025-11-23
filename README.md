@@ -74,15 +74,23 @@ islamic-guidance-ai/
 ├── backend/                  # FastAPI application
 │   ├── main.py              # Main API routes
 │   ├── services.py          # Quran/Hadith search
-│   └── api_parsers.py       # API response parsers
+│   ├── keyword_extractor.py # Custom keyword extraction
+│   ├── cache.py             # Caching logic
+│   ├── utils.py             # Utility functions
+│   └── fetch_models.py      # Model fetching script
 ├── frontend/                 # Static web application
 │   ├── index.html           # Main page
 │   ├── settings.html        # Settings page
 │   ├── styles.css           # Styles
 │   ├── script.js            # Main logic
-│   └── settings.js          # Settings logic
+│   ├── settings.js          # Settings logic
+│   └── public/              # Public assets
 ├── docs/                     # Documentation
 │   └── VERCEL_DEPLOYMENT.md # Deployment guide
+├── tests/                    # Test suite
+│   ├── backend/             # Backend tests
+│   └── frontend/            # Frontend tests
+├── screenshots/              # Project screenshots
 ├── requirements.txt          # Python dependencies
 ├── vercel.json              # Vercel configuration
 └── .env.example             # Environment template
@@ -151,6 +159,38 @@ islamic-guidance-ai/
 
 ---
 
+### ❓ Help & Credits
+
+#### Help Modal
+![Help Modal](screenshots/help_modal.png)
+
+#### Credits Modal
+![Credits Modal](screenshots/credits_modal.png)
+
+---
+
+### 📱 UI/UX Response
+
+![UI Response](screenshots/external_response.png)
+
+**Response Features:**
+- **Rich Formatting**: Clear distinction between AI advice and citations.
+- **Source Highlighting**: Quran verses and Hadiths are clearly marked.
+- **Interactive Links**: Direct access to source material.
+
+---
+
+### 💡 Load Example Feature
+
+![Load Example](screenshots/load_example.png)
+
+**Ease of Use:**
+- **One-Click Examples**: Pre-built prompts for common life situations.
+- **Instant Loading**: Populates query and settings instantly.
+- **Variety**: Covers mental health, relationships, finance, and more.
+
+---
+
 ### ✨ Key UI/UX Features
 
 - **🎨 Multiple Themes**: 3 distinct visual styles to choose from
@@ -163,6 +203,92 @@ islamic-guidance-ai/
 - **🎯 Intuitive Layout**: Logical flow from input to results
 - **🔍 Clear Typography**: Readable fonts optimized for each theme
 
+## 🔌 API Endpoints
+
+The application provides a RESTful API powered by FastAPI.
+
+### Core Endpoints
+
+#### `POST /api/guidance`
+Get AI guidance with Quran/Hadith citations.
+
+**Request Body:**
+```json
+{
+  "query": "How to deal with anxiety?",
+  "source": "both",
+  "hadith_collection": ["eng-bukhari", "eng-muslim"]
+}
+```
+
+**Response:**
+```json
+{
+  "answer": "Islam teaches us to turn to Allah...",
+  "citations": [
+    {
+      "title": "Quran 13:28",
+      "url": "https://quran.com/13:28"
+    }
+  ]
+}
+```
+
+#### `GET /api/quran/search`
+Search Quran verses by keyword.
+- **URL**: `/api/quran/search?keyword=patience`
+- **Response**: JSON array of verses.
+
+#### `GET /api/hadith/search`
+Search Hadith collections by topic.
+- **URL**: `/api/hadith/search?topic=prayer&collections=eng-bukhari`
+- **Response**: JSON array of hadiths.
+
+### Settings & Configuration
+
+#### `POST /api/save-settings`
+Save application settings.
+
+**Request Body:**
+```json
+{
+  "apiKey": "AIzaSy...",
+  "theme": "traditional",
+  "geminiModel": "gemini-2.0-flash-exp"
+}
+```
+
+#### `POST /api/log`
+Receive frontend logs.
+
+**Request Body:**
+```json
+{
+  "level": "INFO",
+  "message": "User clicked search button",
+  "timestamp": "2025-11-23T12:00:00"
+}
+```
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/` | Root endpoint returning service info |
+| `GET` | `/api/health` | Check API health status and dependencies |
+| `POST` | `/api/guidance` | Get AI guidance with Quran/Hadith citations |
+| `GET` | `/api/quran/search` | Search Quran verses by keyword |
+| `GET` | `/api/hadith/search` | Search Hadith collections by topic |
+| `GET` | `/api/get-settings` | Retrieve current application settings |
+| `POST` | `/api/save-api-key` | Save API key to environment |
+| `POST` | `/api/log` | Receive frontend logs |
+| `GET` | `/api/models` | List available Gemini models |
+| `GET` | `/api/models/current` | Get currently selected model |
+| `POST` | `/api/models/set` | Set active Gemini model |
+| `GET` | `/api/example-prompt` | Get a random example prompt |
+| `GET` | `/api/test-keywords` | Test keyword extraction logic |
+| `POST` | `/api/admin/clear-cache` | Clear server-side cache |
+| `GET` | `/api/admin/run-tests` | Run backend health checks |
+
+
 ## 🛠️ Technology Stack
 
 - **Backend**: Python, FastAPI, Uvicorn
@@ -173,13 +299,14 @@ islamic-guidance-ai/
 
 ## 📝 Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `GEMINI_API_KEY` | Google Gemini API key | Yes |
-| `API_KEY` | Alias for Gemini API key | No |
-| `THEME` | Default theme (light/dark) | No |
-| `GEMINI_MODEL` | Default Gemini model | No |
-| `PORT` | Port number | No |
+| Variable         | Description               | Required |
+|------------------|---------------------------|----------|
+| `GEMINI_API_KEY` | Google Gemini API key     | Yes      |
+| `API_KEY`        | Alias for Gemini API key  | No       |
+| `THEME`          | Default theme (light/dark)| No       |
+| `GEMINI_MODEL`   | Default Gemini model      | No       |
+| `PORT`           | Port number               | No       |
+
 
 ## 🧪 Testing
 
@@ -213,23 +340,10 @@ Once running, visit:
 - ✅ API key saving endpoint is disabled for security
 - ✅ Static files served by Vercel CDN
 
-### For Development (Local)
-- ✅ API keys saved to `.env` file
-- ✅ Logs saved to `logs/` directory
-- ✅ Hot reload enabled
-- ✅ Static files served by FastAPI
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
-MIT License
-Copyright (c) 2025 Haseeb Mir
 
 ## Version
 See `CHANGELOG.md` for version history.
-Current version: 2.1.1
+Current version: 3.0.0
 
 ## 📜 Credits
 

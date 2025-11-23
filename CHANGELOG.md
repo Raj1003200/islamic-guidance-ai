@@ -2,6 +2,18 @@
 
 All notable changes to the Islamic Guidance AI project will be documented in this file.
 
+## [3.0.0] - 2025-11-23 - MAJOR DOCUMENTATION & UI UPDATE
+
+### 📸 Documentation & Screenshots
+- ✅ Updated all screenshots to reflect the latest "Traditional Islamic" theme
+- ✅ Added comprehensive API Endpoints documentation in README
+- ✅ Added "Help" and "Credits" modal screenshots
+- ✅ Updated project structure documentation
+
+### 🚀 Versioning
+- ✅ Bumped major version to 3.0.0
+- ✅ Updated backend API version to 3.0.0
+
 ## [2.1.1] - 2025-11-23 - UI/UX & DOCUMENTATION UPDATE
 
 ### 🎨 Frontend UI/UX Improvements
