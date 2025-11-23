@@ -2,6 +2,14 @@
 
 All notable changes to the Islamic Guidance AI project will be documented in this file.
 
+## [2.1.1] - 2025-11-23 - DOCUMENTATION UPDATE
+
+### 📚 Documentation
+- ✅ Added Beta warning to README
+- ✅ Added Credits section to README
+- ✅ Updated Environment Variables in README and .env.example
+- ✅ Added `API_KEY` alias to .env.example
+
 ## [2.1.0] - 2025-11-23 - MAJOR OPTIMIZATION RELEASE
 
 ### 🔴 P0 - CRITICAL FIXES

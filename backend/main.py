@@ -714,6 +714,108 @@ class APIKeyRequest(BaseModel):
     """Request model for API key management"""
     apiKey: str
 
+class SettingsRequest(BaseModel):
+    """Request model for saving settings"""
+    apiKey: Optional[str] = None
+    theme: Optional[str] = None
+    geminiModel: Optional[str] = None
+
+# List of example guidance prompts
+EXAMPLE_PROMPTS = [
+    "I am feeling anxious about my future and need guidance.",
+    "How can I control my anger when provoked?",
+    "I feel lonely and depressed, what does Islam say?",
+    "I am struggling with financial difficulties.",
+    "How do I improve my relationship with my parents?",
+    "I am having doubts about my faith, how do I strengthen it?",
+    "What is the Islamic perspective on dealing with difficult neighbors?",
+    "How can I balance my work and religious obligations?",
+    "I committed a sin and feel guilty, how do I seek forgiveness?",
+    "How should I deal with jealousy and envy?",
+    "What does Islam say about mental health and seeking therapy?",
+    "How can I be more patient in times of hardship?",
+    "I am struggling to wake up for Fajr prayer, any advice?",
+    "How do I deal with negative thoughts and whispers (waswasa)?",
+    "What is the importance of maintaining family ties?",
+    "How can I improve my character and manners (Akhlaq)?",
+    "I feel disconnected from Allah, how can I reconnect?",
+    "What is the reward for visiting the sick?",
+    "How should I handle disagreements with my spouse?",
+    "What are the benefits of giving charity (Sadaqah)?",
+    "How can I stop backbiting and gossiping?",
+    "What is the significance of the night prayer (Tahajjud)?",
+    "How do I deal with the loss of a loved one?",
+    "What does Islam say about honesty and truthfulness?",
+    "How can I avoid extravagance and wastefulness?",
+    "What is the importance of gratitude (Shukr)?",
+    "How should I treat non-Muslim colleagues and friends?",
+    "What are the rights of children in Islam?",
+    "How can I make my dua (supplication) more effective?",
+    "What is the Islamic view on social media usage?",
+    "How do I control my tongue and speech?",
+    "What is the importance of seeking knowledge?",
+    "How can I prepare for Ramadan?",
+    "What does Islam say about justice and fairness?",
+    "How should I deal with stress and burnout?",
+    "What is the significance of Friday (Jumu'ah) prayer?",
+    "How can I be a better friend?",
+    "What are the signs of a hypocrite and how to avoid them?",
+    "How do I deal with peer pressure?",
+    "What is the importance of cleanliness and purity?",
+    "How can I develop humility and avoid arrogance?",
+    "I don't have a job, please help me through it",
+    "I am sad and depressed in my life",
+    "I am struggling financially and need assistance",
+    "I feel overwhelmed and don't know where to turn",
+    "I am facing significant personal challenges and need support",
+    "I am feeling lonely and need companionship",
+    "I am dealing with health issues and require help",
+    "I am having trouble with my relationships and need guidance",
+    "I am feeling lost and need direction in my life",
+    "I am experiencing anxiety and stress and need coping strategies",
+    "I am having trouble finding housing and need resources",
+    "I am dealing with addiction and need treatment",
+    "I am feeling hopeless and need motivation",
+    "I am facing legal issues and need advice",
+    "I am struggling with grief and loss and need emotional support",
+    "I am feeling isolated and need social connection",
+    "I am dealing with unemployment and need job search assistance",
+    "I am having trouble with my education and need tutoring",
+    "I am feeling burnt out and need a break or support",
+    "I am experiencing discrimination and need advocacy",
+    "I am dealing with a disability and need accommodations",
+    "I am having trouble managing my time and need tools",
+    "I am feeling angry and need anger management techniques",
+    "I am facing creative blocks and need inspiration",
+    "I am dealing with caregiving responsibilities and need respite",
+    "I am having trouble adjusting to a new environment and need support",
+    "I am feeling insecure and need to build confidence",
+    "I am dealing with chronic pain and need management strategies",
+    "I am having trouble managing my time and need tools",
+    "I am feeling burnt out and need a break or support",
+    "I am experiencing discrimination and need advocacy",
+    "I am dealing with a disability and need accommodations",
+    "I am having trouble managing my time and need tools",
+    "I am feeling angry and need anger management techniques",
+    "I am facing creative blocks and need inspiration",
+    "I am dealing with caregiving responsibilities and need respite",
+    "I am having trouble adjusting to a new environment and need support",
+    "I am feeling insecure and need to build confidence",
+    "I am dealing with chronic pain and need management strategies",
+    "I am having trouble communicating effectively and need practice",
+    "I am feeling disconnected from my community and need ways to connect",
+    "I am struggling with sleep problems and need solutions",
+    "I am dealing with trauma and need therapy",
+    "I am having trouble making decisions and need clarity",
+    "I am feeling unmotivated and need encouragement",
+    "I am facing career changes and need guidance",
+    "I am dealing with family conflicts and need mediation",
+    "I am having trouble with technology and need technical support",
+    "I am feeling misunderstood and need validation",
+    "I am dealing with aging parents and need support",
+    "I am having trouble setting boundaries and need strategies"
+]
+
 # =============================================================================
 # API ENDPOINTS
 # =============================================================================
@@ -1350,6 +1452,107 @@ async def save_api_key(request: APIKeyRequest):
             status_code=500, 
             detail=f"Error saving API key: {str(e)[:100]}"
         )
+
+@app.post("/api/save-settings")
+async def save_settings(request: SettingsRequest):
+    """
+    Save all settings (API Key, Theme, Model) to .env file.
+    """
+    try:
+        if IS_SERVERLESS:
+            return {
+                "success": False,
+                "isProduction": True,
+                "message": "Settings cannot be saved permanently in serverless environments.",
+                "instructions": "Please set environment variables in your deployment platform.",
+                "environment": os.getenv("VERCEL_ENV", "production")
+            }
+        
+        # Find .env file path
+        env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+        
+        # Read existing .env file
+        env_lines = []
+        if os.path.exists(env_path):
+            with open(env_path, "r", encoding="utf-8") as f:
+                env_lines = f.readlines()
+        
+        # Helper to update or append key
+        def update_env_var(lines, key, value):
+            found = False
+            for i, line in enumerate(lines):
+                if line.startswith(f"{key}="):
+                    lines[i] = f"{key}={value}\n"
+                    found = True
+                    break
+            if not found:
+                lines.append(f"{key}={value}\n")
+            return lines
+
+        # Update variables
+        if request.apiKey:
+            env_lines = update_env_var(env_lines, "GEMINI_API_KEY", request.apiKey.strip())
+            os.environ["GEMINI_API_KEY"] = request.apiKey.strip()
+            global API_KEY
+            API_KEY = request.apiKey.strip()
+            
+        if request.theme:
+            env_lines = update_env_var(env_lines, "THEME", request.theme.strip())
+            os.environ["THEME"] = request.theme.strip()
+            
+        if request.geminiModel:
+            env_lines = update_env_var(env_lines, "GEMINI_MODEL", request.geminiModel.strip())
+            os.environ["GEMINI_MODEL"] = request.geminiModel.strip()
+            set_model(request.geminiModel.strip())
+
+        # Write back to .env file
+        with open(env_path, "w", encoding="utf-8") as f:
+            f.writelines(env_lines)
+        
+        return {
+            "success": True,
+            "isProduction": False,
+            "message": "Settings saved successfully.",
+            "environment": "local"
+        }
+        
+    except Exception as e:
+        print(f"[SAVE-SETTINGS] Error: {e}", file=sys.stderr, flush=True)
+        raise HTTPException(status_code=500, detail=f"Error saving settings: {str(e)[:100]}")
+
+@app.get("/api/get-settings")
+async def get_settings():
+    """
+    Get all settings from environment variables.
+    """
+    try:
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        # Mask key if in serverless/production
+        if IS_SERVERLESS and api_key:
+            api_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
+            
+        return {
+            "apiKey": api_key,
+            "theme": os.getenv("THEME", "traditional"),
+            "geminiModel": os.getenv("GEMINI_MODEL", DEFAULT_MODEL),
+            "isProduction": IS_SERVERLESS
+        }
+    except Exception as e:
+        print(f"[GET-SETTINGS] Error: {e}", file=sys.stderr, flush=True)
+        raise HTTPException(status_code=500, detail=f"Error retrieving settings: {str(e)[:100]}")
+
+@app.get("/api/example-prompt")
+async def get_example_prompt():
+    """
+    Return a random example guidance prompt.
+    """
+    import random
+    try:
+        prompt = random.choice(EXAMPLE_PROMPTS)
+        return {"prompt": prompt}
+    except Exception as e:
+        print(f"[EXAMPLE-PROMPT] Error: {e}", file=sys.stderr, flush=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/admin/clear-cache")
 async def clear_cache_endpoint(pattern: Optional[str] = None):

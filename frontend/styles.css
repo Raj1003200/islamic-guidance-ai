@@ -6,6 +6,10 @@
   box-sizing: border-box;
 }
 
+.hidden {
+  display: none !important;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
@@ -25,6 +29,104 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   max-width: 600px;
   width: 100%;
+  position: relative; /* For absolute positioning if needed */
+}
+
+/* Warning Banner */
+/* Warning Banner - Fixed at Bottom */
+.warning-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #fff3cd;
+  color: #856404;
+  border-top: 1px solid #ffeeba;
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 2000;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+/* Adjust body padding to prevent content from being hidden behind banner */
+body {
+  padding-bottom: 3rem;
+}
+
+/* Settings Grid Buttons - Premium Look */
+.settings-grid-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.settings-grid-buttons button {
+  padding: 0.75rem 0.5rem;
+  background: transparent;
+  color: #3498db;
+  border: 1px solid #3498db;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-grid-buttons button:hover {
+  background: #3498db;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+}
+
+/* Traditional Theme Overrides for Settings Buttons */
+html[data-theme='traditional'] .settings-grid-buttons button {
+  color: #c9a961;
+  border-color: #c9a961;
+}
+
+html[data-theme='traditional'] .settings-grid-buttons button:hover {
+  background: #c9a961;
+  color: #3e2723;
+  box-shadow: 0 4px 6px rgba(201, 169, 97, 0.2);
+}
+
+/* Dark Theme Overrides for Settings Buttons */
+html[data-theme='dark'] .settings-grid-buttons button {
+  color: #81d4fa;
+  border-color: #81d4fa;
+}
+
+html[data-theme='dark'] .settings-grid-buttons button:hover {
+  background: #81d4fa;
+  color: #1e1e1e;
+  box-shadow: 0 4px 6px rgba(129, 212, 250, 0.2);
+}
+
+html[data-theme='dark'] .warning-banner {
+  background-color: #332701;
+  color: #ffc107;
+  border-color: #664d03;
+}
+
+html[data-theme='traditional'] .warning-banner {
+  background-color: #fff8e1;
+  color: #5d4037;
+  border-color: #c9a961;
+}
+
+html[data-theme='minimal'] .warning-banner {
+  background-color: #fafafa;
+  color: #333;
+  border-color: #ddd;
 }
 
 .logo {
@@ -47,256 +149,232 @@ h1 {
   width: 100%;
 }
 
-.search-row {
+#query {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  border: 2px solid #bdc3c7;
+  border-radius: 0.5rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.options-row {
   display: flex;
   gap: 0.5rem;
   width: 100%;
 }
 
-.options-row {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  flex-wrap: wrap; /* Allow wrapping on smaller screens */
-}
-
-#query {
-  flex: 1;
-  padding: 1rem 1.2rem; /* Bigger padding */
-  font-size: 1.1rem; /* Bigger font */
-  border: 2px solid #bdc3c7;
-  border-radius: 0.5rem;
-  transition: border-color 0.2s;
-}
-
-#query:focus {
-  outline: none;
-  border-color: #3498db;
-}
-
-#searchBtn {
-  padding: 1rem 1.5rem; /* Bigger button to match input */
-  font-size: 1.1rem;
-  background: #3498db;
-  color: #fff;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-}
-
 .source-select,
 .hadith-collection-select {
-  padding: 0.75rem 1.5rem;
+  flex: 1;
+  padding: 0.75rem;
   font-size: 1rem;
   border: 2px solid #bdc3c7;
   border-radius: 0.5rem;
   background-color: white;
-  cursor: pointer;
-  min-width: 200px;
-  transition: border-color 0.2s;
 }
 
-.source-select:focus,
-.hadith-collection-select:focus {
-  outline: none;
-  border-color: #3498db;
-}
-
-#searchBtn:hover {
-  background: #2980b9;
-}
-
-.status {
-  margin-top: 0.5rem;
-  font-style: italic;
-  color: #555;
-}
-
-.toast {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #e74c3c;
-  color: #fff;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  animation: fadeInOut 4s forwards;
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-.result {
-  margin-top: 1.5rem;
-  background: rgba(255,255,255,0.8);
+.full-width-btn {
+  width: 100%;
   padding: 1rem;
-  border-radius: 0.75rem;
-  text-align: left;
-}
-
-.answer {
   font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
 }
 
-.citations {
+.full-width-btn:hover {
+  background-color: #2980b9;
+}
+
+.control-buttons-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.secondary-btn {
+  flex: 1;
+  padding: 0.75rem;
+  background-color: transparent;
+  border: 1px solid #bdc3c7;
+  border-radius: 0.5rem;
+  cursor: pointer;
   font-size: 0.9rem;
   color: #555;
+  transition: all 0.2s;
 }
 
-.hidden { display: none; }
+.secondary-btn:hover {
+  background-color: rgba(0,0,0,0.05);
+  border-color: #999;
+}
 
-/* Settings page specific */
+/* Settings Panel Generic Styles */
 .settings-panel {
-  margin: 1rem 0;
   text-align: left;
+  width: 100%;
 }
+
 .settings-panel label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 600;
+  margin-top: 1rem;
 }
 
-#themeSelect {
+.settings-panel select,
+.settings-panel input {
   width: 100%;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  padding: 0.75rem;
   border: 2px solid #bdc3c7;
   border-radius: 0.5rem;
-  background-color: white;
-  color: #333;
-  cursor: pointer;
-  transition: border-color 0.2s;
-  margin-bottom: 1.5rem;
-}
-
-#themeSelect:focus {
-  outline: none;
-  border-color: #3498db;
-}
-
-#modelSelect {
-  width: 100%;
-  padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  border: 2px solid #bdc3c7;
-  border-radius: 0.5rem;
-  background-color: white;
-  color: #333;
-  cursor: pointer;
-  transition: border-color 0.2s;
   margin-bottom: 0.5rem;
-}
-
-#modelSelect:focus {
-  outline: none;
-  border-color: #3498db;
 }
 
 .model-info {
   display: block;
   font-size: 0.85rem;
   color: #7f8c8d;
-  margin-bottom: 1.5rem;
-  font-style: italic;
+  margin-bottom: 1rem;
 }
 
-
-.settings-panel input {
+/* Modal Styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid #bdc3c7;
-  border-radius: 0.3rem;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
 }
-.settings-panel button {
-  padding: 0.5rem 1rem;
-  background: #3498db;
-  color: #fff;
-  border: none;
-  border-radius: 0.3rem;
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  text-align: center;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.5rem;
   cursor: pointer;
 }
-.settings-link {
-  display: inline-block;
-  margin-top: 1rem;
-  color: #3498db;
-  text-decoration: none;
-}
-.settings-link:hover {
-  text-decoration: underline;
+
+.credits-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
-.status-message {
-  margin-top: 1rem;
-  font-weight: bold;
-  padding: 0.5rem;
-  border-radius: 0.3rem;
-  background-color: rgba(255,255,255,0.8);
-}
-
-.error-message {
-  background-color: #fee;
-  border-left: 4px solid #e74c3c;
-  padding: 1rem;
-  color: #c0392b;
+.credit-link {
+  display: block;
+  padding: 0.75rem;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
   border-radius: 0.5rem;
-  margin: 0.5rem 0;
+  text-decoration: none;
+  color: #333;
 }
 
-/* Dark/Light theme handling */
-html[data-theme='dark'] body {
-  background: #1e1e1e;
-  color: #e0e0e0;
+/* Settings Page Specifics - Matching User Design */
+.settings-buttons-container {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
-html[data-theme='dark'] .hero {
-  background: rgba(0,0,0,0.6);
-  color: #e0e0e0;
+
+.settings-row-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
 }
-html[data-theme='dark'] h1 {
-  color: #e0e0e0;
+
+.settings-row-bottom {
+  display: flex;
+  justify-content: center;
 }
-html[data-theme='dark'] #query {
-  background: #333;
+
+.settings-buttons-container button {
+  background: transparent;
+  border: 1px solid #c9a961; /* Gold border */
+  color: #c9a961;
+  padding: 0.8rem 1.5rem;
+  border-radius: 0.5rem;
+  font-family: 'Georgia', serif;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1; /* Equal width for top row */
+}
+
+.settings-row-bottom button {
+  flex: 0 0 auto; /* Auto width for bottom button */
+  min-width: 150px;
+}
+
+.settings-buttons-container button:hover {
+  background: rgba(201, 169, 97, 0.1);
+  box-shadow: 0 0 10px rgba(201, 169, 97, 0.2);
+}
+
+/* Specific overrides for the "Traditional" look in the image */
+html[data-theme='traditional'] body {
+  background-color: #1a1a1a; /* Dark background */
+  background-image: none; /* Remove gradient if needed, or keep dark gradient */
+}
+
+html[data-theme='traditional'] .hero {
+  background-color: #2b221b; /* Dark brown card */
+  border: 1px solid #3e3025;
+  color: #e8dcc8;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  max-width: 500px; /* Match narrower look */
+}
+
+html[data-theme='traditional'] h1 {
+  color: #e8dcc8; /* Beige title */
+  font-family: 'Georgia', serif;
+  font-size: 2.5rem;
+}
+
+html[data-theme='traditional'] label {
   color: #fff;
-  border-color: #555;
+  font-family: 'Georgia', serif;
+  font-size: 1.1rem;
 }
-html[data-theme='dark'] #searchBtn {
-  background: #555;
+
+html[data-theme='traditional'] select,
+html[data-theme='traditional'] input {
+  background-color: #362b22; /* Darker brown input */
+  border: 1px solid #4a3b2f;
+  color: #e8dcc8;
+  border-radius: 0.5rem;
+  padding: 0.8rem;
 }
-html[data-theme='dark'] .source-select,
-html[data-theme='dark'] .hadith-collection-select,
-html[data-theme='dark'] #themeSelect,
-html[data-theme='dark'] #modelSelect {
-  background-color: #333;
-  color: #fff;
-  border-color: #555;
-}
-html[data-theme='dark'] .settings-panel button {
-  background: #555;
-}
-html[data-theme='dark'] .result {
-  background: rgba(0,0,0,0.6);
-  color: #e0e0e0;
-}
-html[data-theme='dark'] .citations {
-  color: #aaa;
-}
-html[data-theme='dark'] .citations a {
-  color: #81d4fa;
-}
-html[data-theme='dark'] .error-message {
-  background-color: #4a1a1a;
-  border-left-color: #e74c3c;
-  color: #ff6b6b;
+
+html[data-theme='traditional'] .model-info {
+  color: #8d7b68;
+  font-style: italic;
 }
 
 /* Traditional Islamic Theme */
@@ -322,13 +400,26 @@ html[data-theme='traditional'] #modelSelect {
   color: #3e2723;
 }
 html[data-theme='traditional'] #searchBtn,
-html[data-theme='traditional'] .settings-panel button {
+html[data-theme='traditional'] .settings-grid-buttons button {
   background: #1a5f5f;
   color: #ffd700;
 }
 html[data-theme='traditional'] #searchBtn:hover,
-html[data-theme='traditional'] .settings-panel button:hover {
+html[data-theme='traditional'] .settings-grid-buttons button:hover {
   background: #154a4a;
+}
+html[data-theme='traditional'] .warning-banner {
+  background-color: #fff8e1;
+  color: #5d4037;
+  border-color: #c9a961;
+}
+html[data-theme='traditional'] .secondary-btn {
+  background-color: #faf7f2;
+  border-color: #c9a961;
+  color: #3e2723;
+}
+html[data-theme='traditional'] .secondary-btn:hover {
+  background-color: #e8dcc8;
 }
 
 /* Minimal White Theme */
@@ -355,13 +446,18 @@ html[data-theme='minimal'] #modelSelect {
   color: #333;
 }
 html[data-theme='minimal'] #searchBtn,
-html[data-theme='minimal'] .settings-panel button {
+html[data-theme='minimal'] .settings-grid-buttons button {
   background: #333;
   color: #fff;
 }
 html[data-theme='minimal'] #searchBtn:hover,
-html[data-theme='minimal'] .settings-panel button:hover {
+html[data-theme='minimal'] .settings-grid-buttons button:hover {
   background: #000;
+}
+html[data-theme='minimal'] .warning-banner {
+  background-color: #fafafa;
+  color: #333;
+  border: 1px solid #333;
 }
 
 /* Dark Mode Toggle Button */
@@ -452,4 +548,3 @@ html[data-theme='dark'] .dark-mode-toggle .moon-icon {
 .eye-icon .eye-closed {
   position: absolute;
 }
-

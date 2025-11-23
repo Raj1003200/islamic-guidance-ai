@@ -39,11 +39,32 @@
           <span class="eye-closed hidden">🔒</span>
         </button>
       </div>
-      <button id="saveKeyBtn">Save Key</button>
-      <button id="clearCacheBtn" class="clear-cache-btn">Clear Cache</button>
+      
+      <div class="settings-buttons-container">
+        <div class="settings-row-top">
+          <button id="saveKeyBtn">SAVE SETTINGS</button>
+          <button id="loadSettingsBtn">LOAD SETTINGS</button>
+          <button id="helpBtn">HELP</button>
+        </div>
+        <div class="settings-row-bottom">
+          <button id="creditsBtn">CREDITS</button>
+        </div>
+      </div>
     </div>
     <div id="statusMessage" class="status-message hidden"></div>
-    <a href="index.html" class="back-link">← Back to Home</a>
+    
+    <!-- Credits Modal -->
+    <div id="creditsModal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Credits & Resources</h2>
+        <div class="credits-links">
+          <a href="https://github.com/fawazahmed0/hadith-api" target="_blank" rel="noopener noreferrer" class="credit-link">Hadith API</a>
+          <a href="https://alquran.cloud/api" target="_blank" rel="noopener noreferrer" class="credit-link">Al Quran Cloud</a>
+          <a href="https://ai.google.dev/gemini-api/docs" target="_blank" rel="noopener noreferrer" class="credit-link">Gemini API</a>
+        </div>
+      </div>
+    </div>
   </section>
   <script src="settings.js"></script>
 </body>

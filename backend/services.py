@@ -35,10 +35,12 @@ except ImportError:
 # API CONFIGURATION
 # =============================================================================
 
-QURAN_API_BASE = "https://api.alquran.cloud/v1"
-HADITH_API_BASES = [
-    "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions",
-    "https://raw.githubusercontent.com/fawazahmed0/hadith-api/1/editions"
+QURAN_API_VERSION:int = 1
+HADITH_API_VERSION:int = 1
+QURAN_API_BASE:str = "https://api.alquran.cloud/" + "v" +str(QURAN_API_VERSION)
+HADITH_API_BASES:list[str] = [
+    "https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@" + str(HADITH_API_VERSION) + "/editions",
+    "https://raw.githubusercontent.com/fawazahmed0/hadith-api/" + str(HADITH_API_VERSION) + "/editions"
 ]
 
 # Optimized timeout configuration (Issue #1 - P0)

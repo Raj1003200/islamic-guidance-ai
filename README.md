@@ -1,11 +1,16 @@
+# Islamic Guidance AI
+
+> [!WARNING]
+> **⚠️ This app is BETA. All AI responses must be manually verified. Use links provided to consult authentic sources.**
+
 ## 🚀 Quick Start
 
 ### Local Development
 
 1. **Clone the repository**
    ```bash
-   git clone <your-repo-url>
-   cd MuslimGuideAI
+   git clone https://github.com/haseeb-heaven/islamic-guidance-ai
+   cd islamic-guidance-ai
    ```
 
 2. **Set up environment**
@@ -14,7 +19,7 @@
    cp .env.example .env
    
    # Edit .env and add your Gemini API key
-   # Get key from: https://makersuite.google.com/app/apikey
+   # Get key from: https://aistudio.google.com/api-keys
    ```
 
 3. **Install dependencies**
@@ -63,7 +68,7 @@
 ## 📁 Project Structure
 
 ```
-MuslimGuideAI/
+islamic-guidance-ai/
 ├── api/                      # Vercel serverless functions
 │   └── index.py             # Entry point for backend
 ├── backend/                  # FastAPI application
@@ -171,6 +176,9 @@ MuslimGuideAI/
 | Variable | Description | Required |
 |----------|-------------|----------|
 | `GEMINI_API_KEY` | Google Gemini API key | Yes |
+| `API_KEY` | Alias for Gemini API key | No |
+| `THEME` | Default theme (light/dark) | No |
+| `GEMINI_MODEL` | Default Gemini model | No |
 | `PORT` | Port number | No |
 
 ## 🧪 Testing
@@ -222,6 +230,12 @@ Copyright (c) 2025 Haseeb Mir
 ## Version
 See `CHANGELOG.md` for version history.
 Current version: 2.1.0
+
+## 📜 Credits
+
+- **Hadith API**: [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api)
+- **Quran API**: [alquran.cloud](https://alquran.cloud/api)
+- **Google Gemini**: [Gemini API Docs](https://ai.google.dev/gemini-api/docs)
 
 ## 🙏 Acknowledgments
 

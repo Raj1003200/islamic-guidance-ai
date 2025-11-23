@@ -404,3 +404,96 @@ queryInput.addEventListener('keydown', (e) => {
         searchBtn.click();
     }
 });
+
+// =============================================================================
+// NEW FEATURES LOGIC
+// =============================================================================
+
+// 1. Hadith Selector Logic
+const sourceSelect = document.getElementById('source');
+const hadithSelect = document.getElementById('hadithCollection');
+
+function updateHadithSelectorState() {
+    const source = sourceSelect.value;
+    if (source === 'internal') {
+        hadithSelect.disabled = true;
+        hadithSelect.title = "Hadith selection is disabled for Internal (AI Only) source";
+    } else {
+        hadithSelect.disabled = false;
+        hadithSelect.title = "Select Hadith collection";
+    }
+}
+
+// Initialize state and add listener
+if (sourceSelect && hadithSelect) {
+    updateHadithSelectorState();
+    sourceSelect.addEventListener('change', updateHadithSelectorState);
+}
+
+// 2. Load Example Logic
+const loadExampleBtn = document.getElementById('loadExampleBtn');
+
+if (loadExampleBtn) {
+    loadExampleBtn.addEventListener('click', async () => {
+        try {
+            // Add loading state
+            const originalText = loadExampleBtn.textContent;
+            loadExampleBtn.textContent = 'Loading...';
+            loadExampleBtn.disabled = true;
+            
+            const response = await fetch('/api/example-prompt');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.prompt) {
+                    queryInput.value = data.prompt;
+                    queryInput.focus();
+                    logToServer('info', '[USER ACTION] Loaded example query from backend');
+                }
+            } else {
+                console.error('Failed to fetch example prompt');
+                showToast('Failed to load example. Please try again.');
+            }
+        } catch (err) {
+            console.error('Error fetching example:', err);
+            showToast('Network error loading example.');
+        } finally {
+            // Restore button state
+            loadExampleBtn.textContent = 'Load Example';
+            loadExampleBtn.disabled = false;
+        }
+    });
+}
+
+// 3. Navigation Buttons
+// 3. Navigation Buttons
+const settingsBtn = document.getElementById('settingsBtn');
+
+function navigateToSettings() {
+    window.location.href = 'settings.html';
+}
+
+if (settingsBtn) settingsBtn.addEventListener('click', navigateToSettings);
+
+// 4. Credits Modal Logic
+const creditsBtn = document.getElementById('creditsBtn');
+const creditsModal = document.getElementById('creditsModal');
+const closeModal = document.querySelector('.close-modal');
+
+if (creditsBtn && creditsModal) {
+    creditsBtn.addEventListener('click', () => {
+        creditsModal.classList.remove('hidden');
+    });
+}
+
+if (closeModal && creditsModal) {
+    closeModal.addEventListener('click', () => {
+        creditsModal.classList.add('hidden');
+    });
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+    if (e.target === creditsModal) {
+        creditsModal.classList.add('hidden');
+    }
+});

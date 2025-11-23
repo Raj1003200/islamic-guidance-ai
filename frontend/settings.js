@@ -230,23 +230,28 @@ saveBtn.addEventListener('click', async () => {
   
   // Save to backend .env file
   try {
-    const response = await fetch('/api/save-api-key', {
+    const theme = document.documentElement.getAttribute('data-theme') || 'traditional';
+    const model = document.getElementById('modelSelect').value;
+
+    const response = await fetch('/api/save-settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ apiKey: key })
+      body: JSON.stringify({ 
+        apiKey: key,
+        theme: theme,
+        geminiModel: model
+      })
     });
     
     if (response.ok) {
-      showStatus('API key saved successfully! Please restart the server.');
+      showStatus('Settings saved successfully!');
     } else {
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.indexOf("application/json") !== -1) {
         const error = await response.json();
-        showStatus(`Failed to save API key: ${error.detail}`, true);
+        showStatus(`Failed to save settings: ${error.detail || error.message}`, true);
       } else {
-        const text = await response.text();
-        showStatus(`Failed to save API key: Server returned ${response.status} ${response.statusText}`, true);
-        console.error("Server error:", text);
+        showStatus(`Failed to save settings: Server returned ${response.status}`, true);
       }
     }
   } catch (err) {
@@ -313,6 +318,11 @@ if (clearCacheBtn) {
       
       if (response.ok) {
         const data = await response.json();
+        
+        // Clear local storage as well
+        localStorage.clear();
+        sessionStorage.clear();
+        
         showStatus(`Cache cleared successfully!\n`);
         console.log('[CACHE] Cleared patterns:', data.patterns);
       } else {
@@ -329,3 +339,78 @@ if (clearCacheBtn) {
     }
   });
 }
+
+// =============================================================================
+// NEW BUTTONS LOGIC
+// =============================================================================
+
+const loadSettingsBtn = document.getElementById('loadSettingsBtn');
+const helpBtn = document.getElementById('helpBtn');
+const creditsBtn = document.getElementById('creditsBtn');
+const creditsModal = document.getElementById('creditsModal');
+const closeModal = document.querySelector('.close-modal');
+
+if (loadSettingsBtn) {
+  loadSettingsBtn.addEventListener('click', async () => {
+    try {
+      const response = await fetch('/api/get-settings');
+      if (response.ok) {
+        const data = await response.json();
+        
+        // 1. Load API Key
+        if (data.apiKey) {
+          apiKeyInput.value = data.apiKey;
+          localStorage.setItem('geminiApiKey', data.apiKey);
+        }
+        
+        // 2. Load Theme
+        if (data.theme) {
+          document.documentElement.setAttribute('data-theme', data.theme);
+          localStorage.setItem('theme', data.theme);
+          if (themeSelect) {
+            themeSelect.value = data.theme;
+          }
+        }
+        
+        // 3. Load Model
+        if (data.geminiModel) {
+           if (modelSelect) {
+             modelSelect.value = data.geminiModel;
+           }
+        }
+
+        showStatus('Settings loaded successfully!');
+      } else {
+        showStatus('Failed to load settings from server.', true);
+      }
+    } catch (err) {
+      console.error('Could not load settings:', err);
+      showStatus('Error loading settings.', true);
+    }
+  });
+}
+
+if (helpBtn) {
+  helpBtn.addEventListener('click', () => {
+    window.open('https://github.com/haseeb-heaven/islamic-guidance-ai/blob/develop/README.md', '_blank');
+  });
+}
+
+if (creditsBtn && creditsModal) {
+  creditsBtn.addEventListener('click', () => {
+    creditsModal.classList.remove('hidden');
+  });
+}
+
+if (closeModal && creditsModal) {
+  closeModal.addEventListener('click', () => {
+    creditsModal.classList.add('hidden');
+  });
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+  if (e.target === creditsModal) {
+    creditsModal.classList.add('hidden');
+  }
+});

@@ -46,10 +46,15 @@
       </div>
       
       <!-- Full-width button below -->
-      <button id="searchBtn" class="full-width-btn">GET GUIDANCE</button>
+      <button id="searchBtn" class="full-width-btn">SEEK GUIDANCE</button>
+
+      <!-- New Control Buttons -->
+      <div class="control-buttons-row">
+        <button id="loadExampleBtn" class="secondary-btn">Load Example</button>
+        <button id="settingsBtn" class="secondary-btn">Settings</button>
+      </div>
     </div>
     
-    <a href="settings.html" class="settings-link">Settings</a>
     <div id="status" class="status hidden"></div>
     <div id="toast" class="toast hidden"></div>
     
@@ -57,7 +62,24 @@
       <div id="answer" class="answer"></div>
       <div id="citations" class="citations"></div>
     </section>
+
+    <!-- Credits Modal -->
+    <div id="creditsModal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Credits & Resources</h2>
+        <div class="credits-links">
+          <a href="https://github.com/fawazahmed0/hadith-api" target="_blank" rel="noopener noreferrer" class="credit-link">Hadith API</a>
+          <a href="https://api.alquran.cloud/v1" target="_blank" rel="noopener noreferrer" class="credit-link">Al Quran Cloud</a>
+          <a href="https://ai.google.dev/gemini-api/docs" target="_blank" rel="noopener noreferrer" class="credit-link">Gemini API</a>
+        </div>
+      </div>
+    </div>
   </section>
+
+  <div class="warning-banner">
+    ⚠️ This is an AI-generated response. Manual cross-verification is required.
+  </div>
   
   <script src="script.js"></script>
 </body>
