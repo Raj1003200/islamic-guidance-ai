@@ -28,11 +28,11 @@ body {
   padding: 2rem 1.5rem;
   border-radius: 1rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  max-width: 900px; /* Fixed width for all themes */
+  max-width: 900px;
   width: 100%;
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  box-sizing: border-box; /* Ensure padding doesn't affect width */
+  box-sizing: border-box;
 }
 
 /* Warning Banner */
@@ -50,38 +50,6 @@ body {
   font-weight: 600;
   z-index: 2000;
   box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
-
-/* Settings Grid Buttons */
-.settings-grid-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(0,0,0,0.1);
-}
-
-.settings-grid-buttons button {
-  padding: 0.75rem 0.5rem;
-  background: transparent;
-  color: #3498db;
-  border: 1px solid #3498db;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: all 0.2s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.settings-grid-buttons button:hover {
-  background: #3498db;
-  color: #fff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
 }
 
 .logo {
@@ -106,15 +74,16 @@ h1 {
 
 #query {
   width: 100%;
-  padding: 0.75rem;
-  font-size: 0.95rem;
+  padding: 1rem;
+  font-size: 1.5rem;
   background: white;
   border: 2px solid #bdc3c7;
   border-radius: 0.5rem;
   resize: vertical;
   font-family: inherit;
   color: #333;
-  min-height: 80px;
+  min-height: 200px;
+  max-height: 400px;
 }
 
 .options-row {
@@ -206,7 +175,7 @@ h1 {
 .model-info {
   display: block;
   font-size: 0.85rem;
-  color: #000000;
+  color: #000;
   margin-bottom: 1rem;
 }
 
@@ -285,7 +254,7 @@ h1 {
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s;
-  flex: 1; /* Equal width for all buttons */
+  flex: 1;
   width: 100%;
 }
 
@@ -425,37 +394,37 @@ html[data-theme='modern'] label {
   font-family: 'Inter', sans-serif;
 }
 
-/* 1. Traditional Islamic Theme (Dark/Gold) */
+/* 1. Traditional Islamic Theme (Light Beige/Gold) */
 html[data-theme='traditional'] body {
-  background: #3a3229;
+  background: linear-gradient(135deg, #f5f0e8, #e8dcc8);
   font-family: 'Georgia', serif;
-  color: #e8dcc8;
+  color: #3e2723;
 }
 
 html[data-theme='traditional'] .hero {
-  background: #2b221b;
+  background: rgba(245, 240, 232, 0.95);
   border: 2px solid #c9a961;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 html[data-theme='traditional'] h1 {
-  color: #e8dcc8;
+  color: #3e2723;
   font-family: 'Georgia', serif;
 }
 
 html[data-theme='traditional'] #query {
-  background: #3a3229;
-  border: 1px solid #5a4a3a;
-  color: #e8dcc8;
+  background: #faf7f2;
+  border: 1px solid #c9a961;
+  color: #3e2723;
 }
 
 html[data-theme='traditional'] .source-select,
 html[data-theme='traditional'] .hadith-collection-select,
 html[data-theme='traditional'] .settings-panel select,
 html[data-theme='traditional'] .settings-panel input {
-  background-color: #FFFFFF;
+  background-color: #e8dcc8;
   border: 1px solid #c9a961;
-  color: #000000;
+  color: #3e2723;
 }
 
 html[data-theme='traditional'] .main-action-btn {
@@ -473,24 +442,24 @@ html[data-theme='traditional'] .main-action-btn:hover {
 
 html[data-theme='traditional'] .secondary-btn {
   border: 1px solid #c9a961;
-  color: #e8dcc8;
+  color: #3e2723;
+  background-color: #faf7f2;
 }
 
 html[data-theme='traditional'] .secondary-btn:hover {
-  background-color: rgba(201, 169, 97, 0.1);
-  border-color: #d4b76f;
+  background-color: #e8dcc8;
 }
 
 html[data-theme='traditional'] .settings-buttons-container button {
   border: 1px solid #c9a961;
   color: #c9a961;
   font-family: 'Georgia', serif;
+  background: transparent;
 }
 
 html[data-theme='traditional'] .settings-buttons-container button:hover {
   background: rgba(201, 169, 97, 0.1);
   box-shadow: 0 0 10px rgba(201, 169, 97, 0.2);
-  color: #c9a961;
 }
 
 html[data-theme='traditional'] .warning-banner {
@@ -500,8 +469,13 @@ html[data-theme='traditional'] .warning-banner {
 }
 
 html[data-theme='traditional'] label {
-  color: #e8dcc8;
+  color: #3e2723;
   font-family: 'Georgia', serif;
+  font-weight: 600;
+}
+
+html[data-theme='traditional'] .model-info {
+  color: #8d7b68;
 }
 
 html[data-theme='traditional'] .result {
@@ -655,6 +629,10 @@ html[data-theme='dark'] label {
   color: #e0e0e0;
 }
 
+html[data-theme='dark'] .model-info {
+  color: #fff;
+}
+
 /* Dark Mode Toggle Button */
 .dark-mode-toggle {
   position: fixed;
@@ -749,573 +727,4 @@ html[data-theme='traditional'] .dark-mode-toggle .moon-icon {
 .eye-icon .eye-open,
 .eye-icon .eye-closed {
   position: absolute;
-}
-
-.hero {
-  text-align: center;
-  background: #2b221b;
-  border: 2px solid #c9a961;
-  padding: 3rem 2.5rem;
-  border-radius: 1.25rem;
-  max-width: 75%;
-  min-height: 75vh;
-  margin: 2rem auto;
-}
-
-
-/* Warning Banner */
-/* Warning Banner - Fixed at Bottom */
-.warning-banner {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #fff3cd;
-  color: #856404;
-  border-top: 1px solid #ffeeba;
-  padding: 0.75rem;
-  text-align: center;
-  font-size: 0.9rem;
-  font-weight: 600;
-  z-index: 2000;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
-
-/* Adjust body padding to prevent content from being hidden behind banner */
-body {
-  padding-bottom: 3rem;
-}
-
-/* Settings Grid Buttons - Premium Look */
-.settings-buttons-container {
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.settings-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  width: 100%;
-}
-
-.settings-buttons-container button {
-  background: transparent;
-  border: 1px solid #3498db;
-  color: #3498db;
-  padding: 0.8rem 1.5rem;
-  border-radius: 0.5rem;
-  font-family: 'Inter', sans-serif;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex: 1; /* Equal width for all buttons */
-  width: 100%;
-}
-
-.settings-buttons-container button:hover {
-  background: #3498db;
-  color: white;
-}
-
-/* Traditional Theme Overrides for Settings Buttons */
-html[data-theme='traditional'] .settings-buttons-container button {
-  color: #c9a961;
-  border-color: #c9a961;
-  font-family: 'Georgia', serif;
-}
-
-html[data-theme='traditional'] .settings-buttons-container button:hover {
-  background: #c9a961;
-  color: #3e2723;
-  box-shadow: 0 4px 6px rgba(201, 169, 97, 0.2);
-}
-
-/* Dark Theme Overrides for Settings Buttons */
-html[data-theme='dark'] .settings-buttons-container button {
-  color: #81d4fa;
-  border-color: #81d4fa;
-}
-
-html[data-theme='dark'] .settings-buttons-container button:hover {
-  background: #81d4fa;
-  color: #1e1e1e;
-  box-shadow: 0 4px 6px rgba(129, 212, 250, 0.2);
-}
-
-/* Minimal Theme Overrides for Settings Buttons */
-html[data-theme='minimal'] .settings-buttons-container button {
-  border: 1px solid #333;
-  color: #333;
-}
-
-html[data-theme='minimal'] .settings-buttons-container button:hover {
-  background: #333;
-  color: white;
-}
-
-/* Modern Theme Overrides for Settings Buttons */
-html[data-theme='modern'] .settings-buttons-container button {
-  border: 1px solid #3498db;
-  color: #3498db;
-  font-family: 'Inter', sans-serif;
-}
-
-html[data-theme='modern'] .settings-buttons-container button:hover {
-  background: #3498db;
-  color: white;
-}
-
-.logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 1rem;
-}
-
-h1 {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: #e8dcc8;
-  font-family: 'Georgia', serif;
-}
-
-.search-container textarea {
-  width: 85%;         /* adjust as needed */
-  min-height: 200px;  /* normal height */
-  max-height: 400px;  /* optional limit */
-  padding: 1rem;
-  font-size: 1.5rem;
-}
-
-
-
-#query {
-  width: 100%;
-  padding: 0.75rem;
-  font-size: 0.95rem;
-  background: #3a3229;
-  border: 1px solid #5a4a3a;
-  border-radius: 0.5rem;
-  resize: vertical;
-  font-family: inherit;
-  color: #e8dcc8;
-  min-height: 80px;
-}
-
-.options-row {
-  display: flex;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.source-select,
-.hadith-collection-select {
-  flex: 1;
-  padding: 0.65rem;
-  font-size: 0.9rem;
-  border: 1px solid #c9a961;
-  border-radius: 0.5rem;
-  background-color: #3a3229;
-  color: #e8dcc8;
-  font-family: inherit;
-}
-
-.control-buttons-row {
-  display: flex;
-  gap: 0.75rem;
-  width: 100%;
-}
-
-.main-action-btn {
-  width: 100%;
-  padding: 0.85rem;
-  font-size: 1rem;
-  background: linear-gradient(135deg, #2d7d7d, #1f5f5f);
-  color: #ffd700;
-  border: none;
-  border-radius: 2rem;
-  cursor: pointer;
-  font-weight: 700;
-  letter-spacing: 1px;
-  transition: all 0.3s;
-  text-transform: uppercase;
-  font-family: 'Georgia', serif;
-}
-
-.main-action-btn:hover {
-  background: linear-gradient(135deg, #1f5f5f, #154a4a);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(45, 125, 125, 0.4);
-}
-
-.secondary-btn {
-  flex: 1;
-  padding: 0.65rem;
-  background-color: transparent;
-  border: 1px solid #c9a961;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-  color: #e8dcc8;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.secondary-btn:hover {
-  background-color: rgba(201, 169, 97, 0.1);
-  border-color: #d4b76f;
-}
-
-/* Settings Panel Generic Styles */
-.settings-panel {
-  text-align: left;
-  width: 100%;
-}
-
-.settings-panel label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  margin-top: 1rem;
-}
-
-.settings-panel select,
-.settings-panel input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #bdc3c7;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.model-info {
-  display: block;
-  font-size: 0.85rem;
-  color: #000000;
-  margin-bottom: 1rem;
-}
-
-/* Modal Styles */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 3000;
-}
-
-.modal-content {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 1rem;
-  width: 90%;
-  max-width: 400px;
-  position: relative;
-  text-align: center;
-}
-
-.close-modal {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.credits-links {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.credit-link {
-  display: block;
-  padding: 0.75rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 0.5rem;
-  text-decoration: none;
-  color: #333;
-}
-
-/* Settings Page Specifics - Matching User Design */
-.settings-buttons-container {
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.settings-row-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.settings-row-bottom {
-  display: flex;
-  justify-content: center;
-}
-
-.settings-buttons-container button {
-  background: transparent;
-  border: 1px solid #c9a961; /* Gold border */
-  color: #c9a961;
-  padding: 0.8rem 1.5rem;
-  border-radius: 0.5rem;
-  font-family: 'Georgia', serif;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex: 1; /* Equal width for top row */
-}
-
-.settings-row-bottom button {
-  flex: 0 0 auto; /* Auto width for bottom button */
-  min-width: 150px;
-}
-
-.settings-buttons-container button:hover {
-  background: rgba(201, 169, 97, 0.1);
-  box-shadow: 0 0 10px rgba(201, 169, 97, 0.2);
-}
-
-/* Specific overrides for the "Traditional" look in the image */
-html[data-theme='traditional'] body {
-  background-color: #0c0606; /* Dark background */
-  background-image: none; /* Remove gradient if needed, or keep dark gradient */
-}
-
-html[data-theme='traditional'] .hero {
-  background-color: #2b221b; /* Dark brown card */
-  border: 1px solid #3e3025;
-  color: #e8dcc8;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-html[data-theme='traditional'] h1 {
-  color: #e8dcc8; /* Beige title */
-  font-family: 'Georgia', serif;
-  font-size: 2.5rem;
-}
-
-html[data-theme='traditional'] label {
-  color: #000000;
-  font-family: 'Georgia', serif;
-  font-size: 1.1rem;
-}
-
-html[data-theme='traditional'] select,
-html[data-theme='traditional'] input {
-  background-color: #362b22; /* Darker brown input */
-  border: 1px solid #4a3b2f;
-  color: #e8dcc8;
-  border-radius: 0.5rem;
-  padding: 0.8rem;
-}
-
-html[data-theme='traditional'] .model-info {
-  color: #000000;
-  font-style: italic;
-}
-
-/* Traditional Islamic Theme */
-html[data-theme='traditional'] body {
-  background: linear-gradient(135deg, #f5f0e8, #e8dcc8);
-  font-family: 'Georgia', serif;
-}
-html[data-theme='traditional'] .hero {
-  background: rgba(245, 240, 232, 0.95);
-  border: 2px solid #c9a961;
-}
-html[data-theme='traditional'] h1 {
-  color: #3e2723;
-  font-family: 'Georgia', serif;
-}
-html[data-theme='traditional'] #query,
-html[data-theme='traditional'] .source-select,
-html[data-theme='traditional'] .hadith-collection-select,
-html[data-theme='traditional'] #themeSelect,
-html[data-theme='traditional'] #modelSelect {
-  background: #faf7f2;
-  border-color: #c9a961;
-  color: #3e2723;
-}
-html[data-theme='traditional'] #searchBtn,
-html[data-theme='traditional'] .settings-grid-buttons button {
-  background: #1a5f5f;
-  color: #ffd700;
-}
-html[data-theme='traditional'] #searchBtn:hover,
-html[data-theme='traditional'] .settings-grid-buttons button:hover {
-  background: #154a4a;
-}
-html[data-theme='traditional'] .warning-banner {
-  background-color: #fff8e1;
-  color: #5d4037;
-  border-color: #c9a961;
-}
-html[data-theme='traditional'] .secondary-btn {
-  background-color: #faf7f2;
-  border-color: #c9a961;
-  color: #3e2723;
-}
-html[data-theme='traditional'] .secondary-btn:hover {
-  background-color: #e8dcc8;
-}
-
-/* Minimal White Theme */
-html[data-theme='minimal'] body {
-  background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-html[data-theme='minimal'] .hero {
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-html[data-theme='minimal'] h1 {
-  color: #000;
-  font-weight: 300;
-}
-html[data-theme='minimal'] #query,
-html[data-theme='minimal'] .source-select,
-html[data-theme='minimal'] .hadith-collection-select,
-html[data-theme='minimal'] #themeSelect,
-html[data-theme='minimal'] #modelSelect {
-  background: #fafafa;
-  border-color: #ddd;
-  color: #333;
-}
-html[data-theme='minimal'] #searchBtn,
-html[data-theme='minimal'] .settings-grid-buttons button {
-  background: #333;
-  color: #fff;
-}
-html[data-theme='minimal'] #searchBtn:hover,
-html[data-theme='minimal'] .settings-grid-buttons button:hover {
-  background: #000;
-}
-html[data-theme='minimal'] .warning-banner {
-  background-color: #fafafa;
-  color: #333;
-  border: 1px solid #333;
-}
-
-/* Dark Mode Toggle Button */
-.dark-mode-toggle {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid #bdc3c7;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  transition: all 0.3s;
-  z-index: 1000;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.dark-mode-toggle:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-}
-
-html[data-theme='dark'] .dark-mode-toggle {
-  background: rgba(0, 0, 0, 0.9);
-  border-color: #555;
-}
-
-.dark-mode-toggle .sun-icon,
-.dark-mode-toggle .moon-icon {
-  position: absolute;
-  transition: opacity 0.3s;
-}
-
-html[data-theme='light'] .dark-mode-toggle .sun-icon {
-  opacity: 1;
-}
-
-html[data-theme='light'] .dark-mode-toggle .moon-icon {
-  opacity: 0;
-}
-
-html[data-theme='dark'] .dark-mode-toggle .sun-icon {
-  opacity: 0;
-}
-
-html[data-theme='dark'] .dark-mode-toggle .moon-icon {
-  opacity: 1;
-}
-
-/* Password Input Wrapper */
-.password-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.password-input-wrapper input {
-  flex: 1;
-  width: 100%;
-  padding-right: 3rem !important;
-}
-
-.eye-icon {
-  position: absolute;
-  right: 0.5rem;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s;
-}
-
-.eye-icon:hover {
-  opacity: 0.7;
-}
-
-.eye-icon .eye-open,
-.eye-icon .eye-closed {
-  position: absolute;
-}
-
-/* Default for all themes */
-.model-info {
-  color: #000 !important;
-}
-
-/* Override for dark theme */
-html[data-theme='dark'] .model-info {
-  color: #fff !important;
-}
-
-/* FINAL override */
-#query {
-  min-height: 200px !important;
-  max-height: 400px !important;
-  padding: 1rem !important;
-  font-size: 1.5rem !important;  /* works for all themes */
 }
