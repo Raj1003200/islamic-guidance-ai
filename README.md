@@ -278,7 +278,6 @@ Receive frontend logs.
 | `GET` | `/api/quran/search` | Search Quran verses by keyword |
 | `GET` | `/api/hadith/search` | Search Hadith collections by topic |
 | `GET` | `/api/get-settings` | Retrieve current application settings |
-
 | `POST` | `/api/log` | Receive frontend logs |
 | `GET` | `/api/models` | List available Gemini models |
 | `GET` | `/api/models/current` | Get currently selected model |
@@ -342,10 +341,92 @@ Once running, visit:
 
 
 ## Version
-See `CHANGELOG.md` for version history.
+See [CHANGELOG.md](https://github.com/haseeb-heaven/islamic-guidance-ai/blob/develop/CHANGELOG.md) for version history.
 Current version: 3.0.0
 
-## 📜 Credits
+## 📄 License
+[MIT License](https://github.com/haseeb-heaven/islamic-guidance-ai/blob/develop/LICENSE)
+Copyright (c) 2025 Haseeb Mir
+
+## � Project Strength and Weakness
+
+### Islamic Guidance AI - Project Rating
+
+Based on comprehensive analysis of the Islamic Guidance AI repository, here's a detailed evaluation across multiple dimensions:
+
+#### 🏗️ Architecture & Design: **8/10**
+- **Strengths**: Clean separation of concerns (backend/frontend/api layers), modular services structure, FastAPI implementation with proper lifecycle management.
+- **Weaknesses**: Serverless detection logic could be simplified, some circular import handling adds complexity.
+- **Note**: Well-architected for both local dev and Vercel deployment with environment-specific optimizations.
+
+#### 🧹 Code Quality: **7/10**
+- **Strengths**: Comprehensive error handling, detailed logging with request IDs, proper async/await patterns, type hints via Pydantic models.
+- **Weaknesses**: `main.py` is 63KB (too monolithic - should be split), some duplicated validation logic, magic numbers in config (e.g., timeouts, limits).
+- **Note**: Good documentation strings but would benefit from breaking into smaller modules.
+
+#### 🔒 Security: **6/10**
+- **Strengths**: Rate limiting with Vercel KV storage, CORS properly configured, API key masking in logs, environment-based security controls.
+- **Weaknesses**: API key stored in `.env` (acceptable for local dev), no input sanitization for user queries, missing authentication for admin endpoints (`/api/admin/*`).
+- **Critical**: `/api/admin/clear-cache` and `/api/admin/run-tests` endpoints are publicly accessible - should require API key or token.
+- **Note**: Acceptable for beta but needs hardening before production.
+
+#### ⚡ Performance: **7.5/10**
+- **Strengths**: Intelligent caching with TTLs, semaphore-based concurrency limiting (5 concurrent), YAKE keyword extraction (no API calls), GZip compression, module-level model caching.
+- **Weaknesses**: 6-second search timeout may be aggressive for slow networks, no CDN integration mentioned, response size validation at 4.5MB is reactive (should prevent earlier).
+- **Note**: Good optimization with Issue #1-#22 addressed systematically.
+
+#### 📈 Scalability: **7/10**
+- **Strengths**: Serverless-ready architecture, stateless design with external cache, proper async patterns.
+- **Weaknesses**: In-memory fallbacks limit horizontal scaling, no database for persistent data, rate limiter depends on Vercel KV availability.
+- **Note**: Scales well for read-heavy workloads but lacks write scaling architecture.
+
+#### 🧪 Testing: **5/10**
+- **Strengths**: Automated health checks on startup, test endpoint for keyword extraction, structured test directory.
+- **Weaknesses**: No visible unit tests in repository, no CI/CD integration mentioned, health checks are basic smoke tests.
+- **Note**: Major gap - production code without comprehensive test coverage is risky.
+
+#### 📚 Documentation: **9/10**
+- **Strengths**: Excellent README with deployment guides, API endpoint documentation, troubleshooting section, inline code comments with issue tracking.
+- **Weaknesses**: Missing architecture diagrams, no API versioning strategy documented.
+- **Note**: One of the strongest aspects - clear instructions for both users and developers.
+
+#### 🛡️ Error Handling: **8/10**
+- **Strengths**: Graceful degradation patterns, cache failure fallbacks, detailed error logging with context, HTTP exception mapping.
+- **Weaknesses**: Generic 500 errors could be more specific, no retry logic for transient external API failures.
+- **Note**: Robust error isolation prevents cascade failures.
+
+#### 🎨 User Experience: **8.5/10**
+- **Strengths**: Three beautiful themes, responsive design, dark mode, load examples feature, clear citation formatting, real-time status updates.
+- **Weaknesses**: No offline mode, limited error messages to users, settings only persist locally.
+- **Note**: Polished UI with thoughtful Islamic aesthetics.
+
+#### 🛠️ Maintainability: **7/10**
+- **Strengths**: Clear module structure, consistent naming conventions, issue tracking in comments (#1-#23), version tracking in `CHANGELOG.md`.
+- **Weaknesses**: Monolithic `main.py` needs refactoring, missing dependency version pinning, no contribution guidelines.
+- **Note**: Good foundation but needs cleanup for long-term maintenance.
+
+### 🏆 Overall Project Rating: **8/10**
+
+---
+
+## 🚀 FUTURE Planning to Migrate to NextJS
+
+### Next.js 14 Migration Plan
+
+Convert this project to **Next.js 14 + TypeScript**:
+
+**Stack:** App Router, Tailwind CSS, TanStack Query, Vercel KV, Edge Runtime.
+
+**Requirements:**
+- **Exact feature parity** with current FastAPI version.
+- **Full TypeScript** (strict mode, no `any`).
+- **Three themes + Dark Mode** implementation.
+- **Gemini AI** integration with streaming support.
+- **Caching Strategy**: 1h for AI responses, 24h for external APIs.
+- **Comprehensive error handling & logging**.
+- **Modular, optimized, well-commented code**.
+
+## �📜 Credits
 
 - **Hadith API**: [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api)
 - **Quran API**: [alquran.cloud](https://alquran.cloud/api)
