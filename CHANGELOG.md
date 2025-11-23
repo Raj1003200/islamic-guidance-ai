@@ -2,13 +2,41 @@
 
 All notable changes to the Islamic Guidance AI project will be documented in this file.
 
-## [2.1.1] - 2025-11-23 - DOCUMENTATION UPDATE
+## [2.1.1] - 2025-11-23 - UI/UX & DOCUMENTATION UPDATE
+
+### 🎨 Frontend UI/UX Improvements
+- ✅ Redesigned Settings page with new button layout
+- ✅ Added **Save Settings** button (replaces "Save Key")
+- ✅ Added **Load Settings** button for loading saved configurations
+- ✅ Added **Help** button (links to GitHub README)
+- ✅ Added **Credits** button with modal popup
+- ✅ Implemented Credits modal with links to:
+  - Hadith API (fawazahmed0/hadith-api)
+  - Al Quran Cloud API
+  - Google Gemini API
+- ✅ Moved warning banner to bottom of page for better UX
+- ✅ Removed redundant bottom navigation buttons
+- ✅ Cleaned up duplicate code in frontend scripts
+
+### 🔧 Backend Improvements
+- ✅ Added API version configuration for Quran and Hadith APIs
+- ✅ Expanded example prompts list (50+ examples covering various life situations)
+- ✅ Added examples for: job loss, depression, financial struggles, anxiety, relationships, health issues, and more
+- ✅ Improved type hints in `services.py`
 
 ### 📚 Documentation
 - ✅ Added Beta warning to README
 - ✅ Added Credits section to README
 - ✅ Updated Environment Variables in README and .env.example
 - ✅ Added `API_KEY` alias to .env.example
+- ✅ Added `THEME` and `GEMINI_MODEL` to .env.example
+- ✅ Fixed Quran API URL in Credits section
+- ✅ Updated version to 2.1.1
+
+### 🐛 Bug Fixes
+- ✅ Fixed duplicate navigation button event listeners
+- ✅ Removed unused example prompts array from `script.js`
+- ✅ Cleaned up commented code in `settings.js`
 
 ## [2.1.0] - 2025-11-23 - MAJOR OPTIMIZATION RELEASE
 

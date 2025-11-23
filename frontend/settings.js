@@ -39,34 +39,56 @@ if (themeSelect) {
 
 // Dark Mode Toggle
 const darkModeToggle = document.getElementById('darkModeToggle');
-if (darkModeToggle) {
+
+function updateToggleIcons(theme) {
+  if (!darkModeToggle) return;
   const moonIcon = darkModeToggle.querySelector('.moon-icon');
   const sunIcon = darkModeToggle.querySelector('.sun-icon');
   
-  // Update icon based on current theme
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  if (currentTheme === 'dark') {
+  if (theme === 'dark' || theme === 'traditional') {
     moonIcon.classList.add('hidden');
     sunIcon.classList.remove('hidden');
+  } else {
+    moonIcon.classList.remove('hidden');
+    sunIcon.classList.add('hidden');
   }
-  
+}
+
+// Initial icon state
+updateToggleIcons(document.documentElement.getAttribute('data-theme'));
+
+// Listen for theme changes from other tabs/pages
+window.addEventListener('storage', (e) => {
+    if (e.key === 'theme') {
+        const newTheme = e.newValue;
+        document.documentElement.setAttribute('data-theme', newTheme);
+        if (themeSelect) themeSelect.value = newTheme;
+        updateToggleIcons(newTheme);
+    }
+});
+
+if (darkModeToggle) {
   darkModeToggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? (localStorage.getItem('theme') || 'traditional') : 'dark';
+    let newTheme;
+    
+    if (currentTheme === 'dark') {
+      // Revert to previous theme or default
+      newTheme = localStorage.getItem('previousTheme') || 'traditional';
+    } else {
+      // Save current theme as previous before switching to dark
+      localStorage.setItem('previousTheme', currentTheme);
+      newTheme = 'dark';
+    }
     
     document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
     
-    if (newTheme === 'dark') {
-      moonIcon.classList.add('hidden');
-      sunIcon.classList.remove('hidden');
-    } else {
-      moonIcon.classList.remove('hidden');
-      sunIcon.classList.add('hidden');
-      // Update theme selector to match
-      if (themeSelect) {
-        themeSelect.value = newTheme;
-      }
+    if (themeSelect) {
+      themeSelect.value = newTheme;
     }
+    
+    updateToggleIcons(newTheme);
   });
 }
 

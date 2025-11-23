@@ -15,21 +15,17 @@
   </button>
   
   <section class="hero">
-    <div class="logo-container">
-      <img src="logo.svg" alt="Islamic Guidance AI" class="logo" id="themeLogo" />
-    </div>
     <h1>Islamic Guidance AI</h1>
     
     <div class="search-container">
-      <!-- Bigger resizable textarea -->
       <textarea
         id="query"
-        rows="6"
+        rows="30"
         placeholder="Describe your situation in detail... (e.g., 'I am feeling sad and Anxious')"
         autocomplete="off"
       ></textarea>
       
-      <!-- Dropdowns row -->
+      <!-- Dropdowns in one row -->
       <div class="options-row">
         <select id="source" class="source-select" aria-label="Select guidance source">
           <option value="both" selected>Both (AI + Sources)</option>
@@ -45,14 +41,14 @@
         </select>
       </div>
       
-      <!-- Full-width button below -->
-      <button id="searchBtn" class="full-width-btn">SEEK GUIDANCE</button>
-
-      <!-- New Control Buttons -->
+      <!-- Control buttons in one row -->
       <div class="control-buttons-row">
         <button id="loadExampleBtn" class="secondary-btn">Load Example</button>
         <button id="settingsBtn" class="secondary-btn">Settings</button>
       </div>
+      
+      <!-- Main action button -->
+      <button id="searchBtn" class="main-action-btn">SEEK GUIDANCE</button>
     </div>
     
     <div id="status" class="status hidden"></div>

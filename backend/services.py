@@ -17,6 +17,12 @@ import os
 import json
 import hashlib
 
+# Add project root to sys.path to fix imports in local dev
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 # Import cache service
 try:
     from backend.cache import cache
@@ -29,6 +35,10 @@ except ImportError:
             async def get(self, k): return None
             async def set(self, k, v, t=0): pass
             async def connect(self): pass
+            async def close(self): pass
+            async def ping(self): return True
+            async def delete(self, k): pass
+            async def clear_pattern(self, p): pass
         cache = MockCache()
 
 # =============================================================================

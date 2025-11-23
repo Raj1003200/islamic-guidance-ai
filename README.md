@@ -229,7 +229,7 @@ Copyright (c) 2025 Haseeb Mir
 
 ## Version
 See `CHANGELOG.md` for version history.
-Current version: 2.1.0
+Current version: 2.1.1
 
 ## 📜 Credits
 

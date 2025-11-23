@@ -17,14 +17,30 @@ const citationsDiv = document.getElementById('citations');
 const storedTheme = localStorage.getItem('theme') || 'traditional';
 document.documentElement.setAttribute('data-theme', storedTheme);
 
+// Listen for theme changes from other tabs/pages
+window.addEventListener('storage', (e) => {
+    if (e.key === 'theme') {
+        document.documentElement.setAttribute('data-theme', e.newValue);
+    }
+});
+
 // Dark Mode Toggle
 const darkModeToggle = document.getElementById('darkModeToggle');
 if (darkModeToggle) {
     darkModeToggle.addEventListener('click', () => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
+        
+        if (currentTheme === 'dark') {
+            // Revert to previous theme or default
+            const previousTheme = localStorage.getItem('previousTheme') || 'traditional';
+            document.documentElement.setAttribute('data-theme', previousTheme);
+            localStorage.setItem('theme', previousTheme);
+        } else {
+            // Save current theme as previous before switching to dark
+            localStorage.setItem('previousTheme', currentTheme);
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
     });
 }
 
