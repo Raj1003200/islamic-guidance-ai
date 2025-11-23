@@ -728,3 +728,344 @@ html[data-theme='traditional'] .dark-mode-toggle .moon-icon {
 .eye-icon .eye-closed {
   position: absolute;
 }
+
+/* ========================================= */
+/* RESPONSIVE DESIGN - MOBILE FIRST */
+/* ========================================= */
+
+/* Mobile devices (up to 480px) */
+@media screen and (max-width: 480px) {
+  body {
+    padding: 1rem 0.5rem 3.5rem;
+  }
+
+  .hero {
+    max-width: 100%;
+    padding: 1.5rem 1rem;
+    border-radius: 0.75rem;
+    margin: 0 0.5rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  /* Textarea optimization for mobile */
+  #query {
+    min-height: 150px;
+    max-height: 300px;
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
+
+  /* Stack options vertically on mobile */
+  .options-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .source-select,
+  .hadith-collection-select {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+
+  /* Stack control buttons vertically */
+  .control-buttons-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .secondary-btn {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .main-action-btn {
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+
+  /* Settings panel adjustments */
+  .settings-panel select,
+  .settings-panel input {
+    font-size: 0.95rem;
+    padding: 0.65rem;
+  }
+
+  /* Stack settings buttons vertically */
+  .settings-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .settings-buttons-container button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  /* Modal adjustments */
+  .modal-content {
+    width: 95%;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+  }
+
+  .close-modal {
+    font-size: 1.25rem;
+  }
+
+  /* Dark mode toggle - smaller on mobile */
+  .dark-mode-toggle {
+    width: 45px;
+    height: 45px;
+    font-size: 1.25rem;
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  /* Warning banner */
+  .warning-banner {
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+
+  /* Result output */
+  .result {
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .answer {
+    font-size: 0.95rem;
+  }
+
+  .answer h3,
+  .citations h3 {
+    font-size: 1rem;
+  }
+
+  /* Model info */
+  .model-info {
+    font-size: 0.75rem;
+  }
+
+  /* Password input */
+  .eye-icon {
+    font-size: 1rem;
+  }
+}
+
+/* Tablets - Portrait (481px to 768px) */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  body {
+    padding: 1.5rem 1rem 3.5rem;
+  }
+
+  .hero {
+    max-width: 95%;
+    padding: 1.75rem 1.25rem;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  .logo {
+    width: 70px;
+    height: 70px;
+  }
+
+  #query {
+    min-height: 180px;
+    max-height: 350px;
+    font-size: 1.25rem;
+  }
+
+  /* Buttons remain side by side but with better spacing */
+  .control-buttons-row {
+    gap: 0.5rem;
+  }
+
+  .secondary-btn {
+    font-size: 0.85rem;
+    padding: 0.6rem;
+  }
+
+  .main-action-btn {
+    padding: 0.9rem;
+    font-size: 0.95rem;
+  }
+
+  /* Settings buttons in 2x2 grid */
+  .settings-row {
+    gap: 0.85rem;
+  }
+
+  .settings-buttons-container button {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .dark-mode-toggle {
+    width: 48px;
+    height: 48px;
+  }
+
+  .modal-content {
+    width: 85%;
+  }
+}
+
+/* Tablets - Landscape & Small Desktops (769px to 1024px) */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .hero {
+    max-width: 750px;
+  }
+
+  #query {
+    font-size: 1.35rem;
+  }
+
+  .settings-buttons-container button {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Large Desktops (1025px and above) */
+@media screen and (min-width: 1025px) {
+  .hero {
+    max-width: 900px;
+  }
+
+  #query {
+    font-size: 1.5rem;
+  }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  body {
+    padding-bottom: 2.5rem;
+  }
+
+  .hero {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+
+  h1 {
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .logo {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0.5rem;
+  }
+
+  #query {
+    min-height: 100px;
+    max-height: 200px;
+  }
+
+  .dark-mode-toggle {
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+  }
+
+  .warning-banner {
+    padding: 0.4rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .dark-mode-toggle,
+  .warning-banner,
+  .control-buttons-row,
+  .settings-buttons-container {
+    display: none !important;
+  }
+
+  .hero {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  body {
+    background: white;
+  }
+}
+
+/* High DPI / Retina displays */
+@media only screen and (-webkit-min-device-pixel-ratio: 2),
+       only screen and (min-resolution: 192dpi) {
+  .hero {
+    backdrop-filter: blur(15px);
+  }
+
+  .logo {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .dark-mode-toggle:hover {
+    transform: none;
+  }
+
+  .main-action-btn:hover {
+    transform: none;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets for better mobile UX */
+  button,
+  .secondary-btn,
+  .main-action-btn,
+  select,
+  input {
+    min-height: 44px;
+  }
+
+  .settings-buttons-container button {
+    min-height: 48px;
+  }
+
+  .dark-mode-toggle {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  /* Remove hover effects on touch devices */
+  .main-action-btn:hover,
+  .secondary-btn:hover,
+  .settings-buttons-container button:hover {
+    transform: none;
+  }
+}
+
