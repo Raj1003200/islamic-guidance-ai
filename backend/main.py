@@ -33,27 +33,40 @@ try:
     import google.generativeai as genai
     from typing import Optional, List, Dict
     print("[IMPORT] Core dependencies loaded successfully", file=sys.stdout, flush=True)
-except ImportError as e:
-    print(f"[CRITICAL] Failed to import core dependencies: {e}", file=sys.stderr, flush=True)
+except ImportError as ex:
+    print(f"[CRITICAL] Failed to import core dependencies: {ex}", file=sys.stderr, flush=True)
     print(f"[CRITICAL] Stack trace: {traceback.format_exc()}", file=sys.stderr, flush=True)
     raise
 
 # Import serverless detection utility
 try:
-    from backend.utils import detect_serverless_environment
-except ImportError as ex:
+    from .utils import detect_serverless_environment
+except Exception:
     try:
         from utils import detect_serverless_environment
-    except ImportError as ex:
-        # Fallback: Simple detection if utils module fails
-        def detect_serverless_environment() -> bool:
-            return bool(
-                os.getenv("VERCEL") == "1" or 
-                os.getenv("VERCEL_ENV") or 
-                os.getenv("AWS_LAMBDA_FUNCTION_NAME") or 
-                os.getenv("AWS_EXECUTION_ENV")
-            )
+    except Exception:
+        import importlib
+        detect_serverless_environment = importlib.import_module("utils").detect_serverless_environment
 
+# Import example prompts
+try:
+    from .utils import EXAMPLE_PROMPTS
+except Exception:
+    try:
+        from utils import EXAMPLE_PROMPTS
+    except Exception:
+        import importlib
+        EXAMPLE_PROMPTS = importlib.import_module("utils").EXAMPLE_PROMPTS
+
+# Import available Gemini models
+try:
+    from .utils import GEMINI_MODELS
+except Exception:
+    try:
+        from utils import GEMINI_MODELS
+    except Exception:
+        import importlib
+        GEMINI_MODELS = importlib.import_module("utils").GEMINI_MODELS
 
 # =============================================================================
 # MODULE-LEVEL CONFIGURATION
@@ -401,22 +414,6 @@ Query: "{query}"
     print(f"[KEYWORDS] Using final custom fallback", file=sys.stdout, flush=True)
     return extract_keywords_custom(query, max_keywords=3)
 
-# =============================================================================
-# GEMINI MODEL CONFIGURATION & SELECTION
-# =============================================================================
-
-# List of available Gemini models (fetched from API)
-GEMINI_MODELS = [
-    {'id': 'gemini-2.0-flash-exp', 'name': 'Gemini 2.0 Flash Exp', 'input_tokens': 1048576, 'output_tokens': 65536},
-    {'id': 'gemini-2.5-flash-preview', 'name': 'Gemini 2.5 Flash Preview', 'input_tokens': 1048576, 'output_tokens': 65536},
-    {'id': 'gemini-2.5-pro-preview', 'name': 'Gemini 2.5 Pro Preview', 'input_tokens': 1048576, 'output_tokens': 65536},
-    {'id': 'gemini-3-pro-preview', 'name': 'Gemini 3 Pro Preview', 'input_tokens': 1048576, 'output_tokens': 65536},
-    {'id': 'gemini-flash-latest', 'name': 'Gemini Flash Latest', 'input_tokens': 1048576, 'output_tokens': 65536},
-    {'id': 'gemini-pro-latest', 'name': 'Gemini Pro Latest', 'input_tokens': 1048576, 'output_tokens': 65536},
-    {'id': 'gemini-2.5-flash-lite', 'name': 'Gemini 2.5 Flash Lite', 'input_tokens': 1048576, 'output_tokens': 65536},
-    {'id': 'gemini-1.5-pro', 'name': 'Gemini 1.5 Pro', 'input_tokens': 2097152, 'output_tokens': 65536},
-    {'id': 'gemini-1.5-flash', 'name': 'Gemini 1.5 Flash', 'input_tokens': 1048576, 'output_tokens': 65536},
-]
 
 # Default model
 DEFAULT_MODEL = 'gemini-2.0-flash-exp'
@@ -663,13 +660,14 @@ vercel_rate_limiter = VercelKVRateLimiter(max_requests=100, window_seconds=3600)
 # GZip Compression (Issue #14 - P2: Lowered threshold to 500 bytes)
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
+# Get the port from the .env
+port = os.getenv("PORT", 8000)
+
 # CORS middleware configuration (Issue #17 - P3: Restricted origins)
 allowed_origins = [
     "https://islamic-guidance-ai.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:8000"
+    "http://localhost:" + port,
+    "http://127.0.0.1:" + port,
 ]
 
 # Allow all origins in development
@@ -728,101 +726,7 @@ class SettingsRequest(BaseModel):
     theme: Optional[str] = None
     geminiModel: Optional[str] = None
 
-# List of example guidance prompts
-EXAMPLE_PROMPTS = [
-    "I am feeling anxious about my future and need guidance.",
-    "How can I control my anger when provoked?",
-    "I feel lonely and depressed, what does Islam say?",
-    "I am struggling with financial difficulties.",
-    "How do I improve my relationship with my parents?",
-    "I am having doubts about my faith, how do I strengthen it?",
-    "What is the Islamic perspective on dealing with difficult neighbors?",
-    "How can I balance my work and religious obligations?",
-    "I committed a sin and feel guilty, how do I seek forgiveness?",
-    "How should I deal with jealousy and envy?",
-    "What does Islam say about mental health and seeking therapy?",
-    "How can I be more patient in times of hardship?",
-    "I am struggling to wake up for Fajr prayer, any advice?",
-    "How do I deal with negative thoughts and whispers (waswasa)?",
-    "What is the importance of maintaining family ties?",
-    "How can I improve my character and manners (Akhlaq)?",
-    "I feel disconnected from Allah, how can I reconnect?",
-    "What is the reward for visiting the sick?",
-    "How should I handle disagreements with my spouse?",
-    "What are the benefits of giving charity (Sadaqah)?",
-    "How can I stop backbiting and gossiping?",
-    "What is the significance of the night prayer (Tahajjud)?",
-    "How do I deal with the loss of a loved one?",
-    "What does Islam say about honesty and truthfulness?",
-    "How can I avoid extravagance and wastefulness?",
-    "What is the importance of gratitude (Shukr)?",
-    "How should I treat non-Muslim colleagues and friends?",
-    "What are the rights of children in Islam?",
-    "How can I make my dua (supplication) more effective?",
-    "What is the Islamic view on social media usage?",
-    "How do I control my tongue and speech?",
-    "What is the importance of seeking knowledge?",
-    "How can I prepare for Ramadan?",
-    "What does Islam say about justice and fairness?",
-    "How should I deal with stress and burnout?",
-    "What is the significance of Friday (Jumu'ah) prayer?",
-    "How can I be a better friend?",
-    "What are the signs of a hypocrite and how to avoid them?",
-    "How do I deal with peer pressure?",
-    "What is the importance of cleanliness and purity?",
-    "How can I develop humility and avoid arrogance?",
-    "I don't have a job, please help me through it",
-    "I am sad and depressed in my life",
-    "I am struggling financially and need assistance",
-    "I feel overwhelmed and don't know where to turn",
-    "I am facing significant personal challenges and need support",
-    "I am feeling lonely and need companionship",
-    "I am dealing with health issues and require help",
-    "I am having trouble with my relationships and need guidance",
-    "I am feeling lost and need direction in my life",
-    "I am experiencing anxiety and stress and need coping strategies",
-    "I am having trouble finding housing and need resources",
-    "I am dealing with addiction and need treatment",
-    "I am feeling hopeless and need motivation",
-    "I am facing legal issues and need advice",
-    "I am struggling with grief and loss and need emotional support",
-    "I am feeling isolated and need social connection",
-    "I am dealing with unemployment and need job search assistance",
-    "I am having trouble with my education and need tutoring",
-    "I am feeling burnt out and need a break or support",
-    "I am experiencing discrimination and need advocacy",
-    "I am dealing with a disability and need accommodations",
-    "I am having trouble managing my time and need tools",
-    "I am feeling angry and need anger management techniques",
-    "I am facing creative blocks and need inspiration",
-    "I am dealing with caregiving responsibilities and need respite",
-    "I am having trouble adjusting to a new environment and need support",
-    "I am feeling insecure and need to build confidence",
-    "I am dealing with chronic pain and need management strategies",
-    "I am having trouble managing my time and need tools",
-    "I am feeling burnt out and need a break or support",
-    "I am experiencing discrimination and need advocacy",
-    "I am dealing with a disability and need accommodations",
-    "I am having trouble managing my time and need tools",
-    "I am feeling angry and need anger management techniques",
-    "I am facing creative blocks and need inspiration",
-    "I am dealing with caregiving responsibilities and need respite",
-    "I am having trouble adjusting to a new environment and need support",
-    "I am feeling insecure and need to build confidence",
-    "I am dealing with chronic pain and need management strategies",
-    "I am having trouble communicating effectively and need practice",
-    "I am feeling disconnected from my community and need ways to connect",
-    "I am struggling with sleep problems and need solutions",
-    "I am dealing with trauma and need therapy",
-    "I am having trouble making decisions and need clarity",
-    "I am feeling unmotivated and need encouragement",
-    "I am facing career changes and need guidance",
-    "I am dealing with family conflicts and need mediation",
-    "I am having trouble with technology and need technical support",
-    "I am feeling misunderstood and need validation",
-    "I am dealing with aging parents and need support",
-    "I am having trouble setting boundaries and need strategies"
-]
+
 
 # =============================================================================
 # API ENDPOINTS
@@ -831,6 +735,8 @@ EXAMPLE_PROMPTS = [
 @app.get("/api/health")
 async def health_check():
     """Comprehensive health check with better error handling"""
+    print("[HEALTH] Health check endpoint called", file=sys.stderr, flush=True)
+    
     health_status = {
         "status": "healthy",
         "service": "IslamicGuideAI",
@@ -842,38 +748,51 @@ async def health_check():
     # Check extractors
     health_status["checks"]["yake_extractor"] = "Available" if YAKE_AVAILABLE else "Not installed"
     health_status["checks"]["custom_extractor"] = "Available" if KeywordExtractorNoDeps else "Unavailable"
+    print(f"[HEALTH] YAKE: {health_status['checks']['yake_extractor']}, Custom: {health_status['checks']['custom_extractor']}", file=sys.stderr, flush=True)
     
     # Check Gemini
     try:
         model = get_gemini_model()
-        health_status["checks"]["gemini_ai"] = "Available" if model else "Unavailable"
+        gemini_status = "Available" if model else "Unavailable"
+        health_status["checks"]["gemini_ai"] = gemini_status
+        api_key_masked = f"...{API_KEY[-8:]}" if API_KEY and len(API_KEY) > 8 else "Not set"
+        print(f"[HEALTH] Gemini AI: {gemini_status}, API Key: {api_key_masked}", file=sys.stderr, flush=True)
     except Exception as e:
         health_status["checks"]["gemini_ai"] = f"Error: {str(e)[:50]}"
         health_status["status"] = "degraded"
+        print(f"[HEALTH] Gemini AI error: {str(e)[:100]}", file=sys.stderr, flush=True)
     
     # Check Cache (with ping() fix)
     try:
         ping_result = await cache.ping()
-        health_status["checks"]["cache"] = "Connected" if ping_result else "Not responding"
+        cache_status = "Connected" if ping_result else "Not responding"
+        health_status["checks"]["cache"] = cache_status
+        print(f"[HEALTH] Cache: {cache_status}", file=sys.stderr, flush=True)
     except Exception as e:
         health_status["checks"]["cache"] = f"Error: {str(e)[:50]}"
+        print(f"[HEALTH] Cache error: {str(e)[:100]}", file=sys.stderr, flush=True)
     
     # Check Quran API
     try:
         test_results = await search_quran_async("test", max_results=1)
         health_status["checks"]["quran_api"] = "Reachable"
+        print(f"[HEALTH] Quran API: Reachable (test returned {len(test_results)} results)", file=sys.stderr, flush=True)
     except Exception as e:
         health_status["checks"]["quran_api"] = f"Error: {str(e)[:50]}"
         health_status["status"] = "degraded"
+        print(f"[HEALTH] Quran API error: {str(e)[:100]}", file=sys.stderr, flush=True)
 
     # check for Hadith API
     try:
         test_results = await search_hadith_async(topic="test", collections=["eng-bukhari", "eng-muslim"], max_per_collection=1)
         health_status["checks"]["hadith_api"] = "Reachable"
+        print(f"[HEALTH] Hadith API: Reachable (test returned {len(test_results)} results)", file=sys.stderr, flush=True)
     except Exception as e:
         health_status["checks"]["hadith_api"] = f"Error: {str(e)[:50]}"
         health_status["status"] = "degraded"
+        print(f"[HEALTH] Hadith API error: {str(e)[:100]}", file=sys.stderr, flush=True)
     
+    print(f"[HEALTH] Overall status: {health_status['status']}", file=sys.stderr, flush=True)
     return health_status
 
 @app.get("/")
@@ -1466,8 +1385,11 @@ async def save_settings(request: SettingsRequest):
     """
     Save all settings (API Key, Theme, Model) to .env file.
     """
+    print("[SAVE-SETTINGS] Endpoint called", file=sys.stderr, flush=True)
+    
     try:
         if IS_SERVERLESS:
+            print("[SAVE-SETTINGS] Rejected - serverless environment", file=sys.stderr, flush=True)
             return {
                 "success": False,
                 "isProduction": True,
@@ -1476,14 +1398,22 @@ async def save_settings(request: SettingsRequest):
                 "environment": os.getenv("VERCEL_ENV", "production")
             }
         
+        # Mask API key for logging
+        api_key_masked = f"...{request.apiKey[-8:]}" if request.apiKey and len(request.apiKey) > 8 else "None"
+        print(f"[SAVE-SETTINGS] Saving - API Key: {api_key_masked}, Theme: {request.theme}, Model: {request.geminiModel}", file=sys.stderr, flush=True)
+        
         # Find .env file path
         env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+        print(f"[SAVE-SETTINGS] Env file path: {env_path}", file=sys.stderr, flush=True)
         
         # Read existing .env file
         env_lines = []
         if os.path.exists(env_path):
             with open(env_path, "r", encoding="utf-8") as f:
                 env_lines = f.readlines()
+            print(f"[SAVE-SETTINGS] Read {len(env_lines)} lines from existing .env", file=sys.stderr, flush=True)
+        else:
+            print(f"[SAVE-SETTINGS] .env file not found, creating new", file=sys.stderr, flush=True)
         
         # Helper to update or append key
         def update_env_var(lines, key, value):
@@ -1503,19 +1433,23 @@ async def save_settings(request: SettingsRequest):
             os.environ["GEMINI_API_KEY"] = request.apiKey.strip()
             global API_KEY
             API_KEY = request.apiKey.strip()
+            print(f"[SAVE-SETTINGS] Updated API Key: ...{API_KEY[-8:]}", file=sys.stderr, flush=True)
             
         if request.theme:
             env_lines = update_env_var(env_lines, "THEME", request.theme.strip())
             os.environ["THEME"] = request.theme.strip()
+            print(f"[SAVE-SETTINGS] Updated Theme: {request.theme}", file=sys.stderr, flush=True)
             
         if request.geminiModel:
             env_lines = update_env_var(env_lines, "GEMINI_MODEL", request.geminiModel.strip())
             os.environ["GEMINI_MODEL"] = request.geminiModel.strip()
             set_model(request.geminiModel.strip())
+            print(f"[SAVE-SETTINGS] Updated Gemini Model: {request.geminiModel}", file=sys.stderr, flush=True)
 
         # Write back to .env file
         with open(env_path, "w", encoding="utf-8") as f:
             f.writelines(env_lines)
+        print(f"[SAVE-SETTINGS] Successfully wrote {len(env_lines)} lines to .env", file=sys.stderr, flush=True)
         
         return {
             "success": True,
@@ -1538,9 +1472,12 @@ async def get_settings():
         # Mask key if in serverless/production
         if IS_SERVERLESS and api_key:
             api_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
+        
+        print("Settings retrieved successfully.", file=sys.stderr, flush=True)
+        print(f"Settings is apiKey {api_key[-8:]}...., theme {os.getenv('THEME', 'traditional')}, geminiModel {os.getenv('GEMINI_MODEL', DEFAULT_MODEL)}, isProduction {IS_SERVERLESS}", file=sys.stderr, flush=True)
             
         return {
-            "apiKey": api_key,
+        "apiKey": api_key,
             "theme": os.getenv("THEME", "traditional"),
             "geminiModel": os.getenv("GEMINI_MODEL", DEFAULT_MODEL),
             "isProduction": IS_SERVERLESS
